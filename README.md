@@ -18,7 +18,7 @@
   - Theme Chooser에서 태마선택
   - 수정후 팀페이지 확인하여 점검.
 
-**팀페이지 주소** 2025년 20조  https://kookmin-sw.github.io/capstone-2023-20/
+**팀페이지 주소** 2025년 20조  https://kookmin-sw.github.io/capstone-2025-20/
 
 
 ## 내용에 아래와 같은 내용들을 추가하세요.
