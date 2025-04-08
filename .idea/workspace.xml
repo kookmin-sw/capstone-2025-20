@@ -5,16 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="36c4cf63-7bd2-493b-ad54-2d6fd0361046" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.idea/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/myapi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/myapi/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pill/migrations/0003_druginfo_ee_doc_data_druginfo_ee_doc_id_and_more.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pill/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pill/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,6 +97,7 @@
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="DJANGO_SETTINGS_MODULE" value="myapi.settings" />
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="" />
@@ -143,7 +138,7 @@
       <option name="presentableId" value="Default" />
       <updated>1742805937474</updated>
       <workItem from="1742805938927" duration="57682000" />
-      <workItem from="1744098237567" duration="211000" />
+      <workItem from="1744098237567" duration="740000" />
     </task>
     <servers />
   </component>
