@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+<<<<<<< Updated upstream
     <data-source source="LOCAL" name="db" uuid="0e26814f-dd57-45e6-8ea7-d27f6e740b86">
+=======
+    <data-source source="LOCAL" name="db" uuid="1bad8dcd-6262-4bd2-9da6-89c0cf8243d2">
+>>>>>>> Stashed changes
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>

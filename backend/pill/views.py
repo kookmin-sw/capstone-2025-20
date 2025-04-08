@@ -1,203 +1,530 @@
+from typing import Any
 from django.shortcuts import render
 
-# Create your views here.
+import logging
 import requests
 from django.http import JsonResponse
+# from django.views.decorators.http import require_GET
+from django.db import transaction
+from django.db.models import Q
+from django.views import View
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import status
 from .models import *
-from .serializer import DrugInfoSerializer
+from .serializers import *
 
-# 공공 API 설정
-API_URL = "" # 실제 API URL 입력
-API_KEY = "+4kJTquJH+HN8qmc6zWMIsGpgjI7AL0OM6vs0MsRERRBaBflhxYSWXua+qNYpZQijLaKcRRku0Q2jfBrTRXLmw=="  # 발급받은 API 키 입력
 
-def fetch_and_save_data():
-    """공공 API에서 데이터를 가져오는 함수"""
-    # total = 45530
-    # params = {
-    #     "serviceKey": API_KEY,
-    #     "type": "json",
-    #     "numOfRows": 10,  # 100까지 가능
-    #     "pageNo": 1 # 100까지 가능
-    # }
-    # try:
-    #     response = requests.get(API_URL, params=params)
-    #     response.raise_for_status()
-    #     raw_data = response.json()
-    #
-    #     # API 응답에서 필요한 데이터 추출
-    #     items = raw_data.get("body", {}).get("items", [])
+
+
+class FetchAndSaveDrugDataView(APIView):
+    """
+    공공 API로부터 데이터를 가져와 DB에 저장하는 기능
+    """
 
     API_URL = "http://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05"
-    # 초기 1회 요청으로 전체 개수 확인
-    params_initial = {
-        "serviceKey": API_KEY,
-        "type": "json",
-        "numOfRows": 1,  # 최소한의 요청
-        "pageNo": 1
-    }
-    try:
-        response_initial = requests.get(API_URL, params=params_initial)
-        response_initial.raise_for_status()
-        raw_data_initial = response_initial.json()
+    API_KEY = "+4kJTquJH+HN8qmc6zWMIsGpgjI7AL0OM6vs0MsRERRBaBflhxYSWXua+qNYpZQijLaKcRRku0Q2jfBrTRXLmw=="  # 발급받은 API 키 입력
 
-        # 총 데이터 개수
-        total_count = raw_data_initial.get("body", {}).get("totalCount", 0)
-        print("Total count:", total_count)
+    def get(self, request):
+        """
+        GET 요청 시 공공 API에서 데이터 fetch → DB에 저장
+        """
+        total_saved_count = 0
+        page_no = 1
+        num_of_rows = 100  # 한 페이지에서 가져올 데이터 수
+        is_last_page = False  # 마지막 페이지 여부 확인
 
-        # 한 페이지에서 몇 개씩 불러올지
-        num_of_rows = 100  # API 허용 범위 내에서 최대값 사용
-        total_pages = (total_count // num_of_rows) + 1
+        while not is_last_page:
+            # 1. 페이지 데이터를 가져옴
+            response_data = self.fetch_page_data(page_no, num_of_rows)
+            if response_data is None:
+                return Response(
+                    {"error": f"{page_no} 페이지 데이터 가져오기 실패"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
-        # 반복하며 모든 페이지 데이터를 가져온 뒤 DB 저장
-        for page in range(1, total_pages + 1):
-            params = {
-                "serviceKey": API_KEY,
-                "type": "json",
-                "numOfRows": num_of_rows,
-                "pageNo": page
-            }
-            response = requests.get(API_URL, params=params)
-            response.raise_for_status()
-
-            raw_data = response.json()
-            items = raw_data.get("body", {}).get("items", [])
-
+            # 2. 해당 페이지 데이터 저장
+            items = response_data.get("items", [])
             if not items:
-                print(f"데이터가 더 이상 없으므로, 페이지 {page}에서 중단합니다.")
+                is_last_page = True  # 더 이상 데이터가 없으면 종료
                 break
 
-            # 데이터 저장
-            for item in items:
-                medicine, created = DrugInfo.objects.update_or_create(
-                    item_seq=item["ITEM_SEQ"],
-                    defaults={
-                        "item_name": item["ITEM_NAME"],
-                        "entp_name": item["ENTP_NAME"],
-                        "consgn_manuf": item.get("CNSGN_MANUF", ""),
-                        "etc_otc_code": item["ETC_OTC_CODE"],
-                        "chart": item.get("CHART", ""),
-                        "bar_code": item.get("BAR_CODE", ""),
-                        "material_name": item.get("MATERIAL_NAME", ""),
-                        "storage_method": item.get("STORAGE_METHOD", ""),
-                        "valid_term": item.get("VALID_TERM", ""),
-                        "pack_unit": item.get("PACK_UNIT", ""),
-                    }
+            # 2. 데이터 저장
+            items = response_data.get("items", [])
+            if not items:
+                is_last_page = True  # 데이터가 없으면 종료
+                break
+
+            saved_count = self.save_data_to_db(items)
+            total_saved_count += saved_count
+
+            total_count = response_data.get("totalCount", 0)
+            if page_no * num_of_rows >= total_count:
+                is_last_page = True  # 모든 페이지 처리 완료
+            else:
+                page_no += 1  # 다음 페이지로 이동
+
+        return Response(
+            {"message": f"총 {total_saved_count}개의 데이터가 저장되었습니다."},
+            status=status.HTTP_200_OK,
+        )
+
+    def fetch_page_data(self, page_no, num_of_rows):
+        """
+        공공 API에서 데이터를 가져오는 함수
+        """
+        try:
+            params = {
+                "serviceKey": self.API_KEY,
+                "type": "json",
+                "pageNo": page_no,
+                "numOfRows": num_of_rows
+            }
+            response = requests.get(self.API_URL, params=params)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"API 호출 실패: {response.status_code} - {response.text}")
+                return None
+
+        except Exception as ex:
+                print(f"API 호출 중 오류 발생: {ex}")
+                return None
+
+    @transaction.atomic
+    def save_data_to_db(self, data_list):
+        """
+        API 데이터를 DB에 저장하는 함수
+        :param data_list: API에서 가져온 데이터의 리스트
+        :return: 저장된 데이터 개수
+        """
+        saved_count = 0
+        drugs_to_create = []
+
+        for data in data_list:
+            try:
+                # DrugInfo 객체 생성
+                drug = DrugInfo(
+                    item_seq=data.get("ITEM_SEQ"),
+                    item_name=data.get("ITEM_NAME"),
+                    entp_name=data.get("ENTP_NAME"),
+                    consgn_manuf=data.get("CONSGN_MANUF"),
+                    etc_otc_code=data.get("ETC_OTC_CODE"),
+                    chart=data.get("CHART"),
+                    bar_code=data.get("BAR_CODE"),
+                    material_name=data.get("MATERIAL_NAME"),
+                    storage_method=data.get("STORAGE_METHOD"),
+                    valid_term=data.get("VALID_TERM"),
+                    pack_unit=data.get("PACK_UNIT"),
+                    ee_doc_data=data.get("EE_DOC_"
+                                         "DATA"),
+                    ud_doc_data=data.get("UD_DOC_DATA"),
+                    nb_doc_data=data.get("NB_DOC_DATA"),
                 )
-                if not created:
-                    # 기존 데이터가 있으면 업데이트
-                    medicine.save()
+                drugs_to_create.append(drug)
 
-        return {f"message": "Data saved successfully Total count: {total_count}"}
-    except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
+            except Exception as ex:
+                print(f"데이터 생성 중 오류 발생: {ex}")
+                continue
+        # 배치 저장
+        if drugs_to_create:
+            try:
+                DrugInfo.objects.bulk_create(drugs_to_create, ignore_conflicts=True)
+                saved_count += len(drugs_to_create)
+            except Exception as ex:
+                print(f"DB 저장 중 오류 발생: {ex}")
 
-def drug_appearance_fetch():
-    params_initial = {
-        "serviceKey": API_KEY,
-        "type": "json",
-        "numOfRows": 1,  # 최소한의 요청
-        "pageNo": 1
-    }
+        return saved_count
+
+
+class FetchAndSaveAppearanceDataView(APIView):
+    """
+    공공 API로부터 약의 외형 데이터를 가져와 `Appearance` 모델에 저장하는 뷰
+    """
+
     API_URL = "http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01"
-    try:
-        response_initial = requests.get(API_URL, params=params_initial)
-        response_initial.raise_for_status()
-        raw_data_initial = response_initial.json()
+    API_KEY = "+4kJTquJH+HN8qmc6zWMIsGpgjI7AL0OM6vs0MsRERRBaBflhxYSWXua+qNYpZQijLaKcRRku0Q2jfBrTRXLmw=="  # 발급받은 API 키 입력
 
-        # 총 데이터 개수
-        total_count = raw_data_initial.get("body", {}).get("totalCount", 0)
-        print("Total count:", total_count)
+    def get(self, request):
+        """
+        GET: 외형 데이터를 저장하거나 업데이트
+        """
+        #공공 API 데이터 Fetch
+        total_saved_count = 0
+        page_no = 1
+        num_of_rows = 100  # 한 페이지에서 가져올 데이터 수
+        is_last_page = False  # 마지막 페이지 여부 확인
 
-        # 한 페이지에서 몇 개씩 불러올지
-        num_of_rows = 300  # API 허용 범위 내에서 최대값 사용
-        total_pages = (total_count // num_of_rows) + 1
+        while not is_last_page:
+            # 1. 페이지 데이터를 가져옴
+            response_data = self.fetch_page_data(page_no, num_of_rows)
+            if response_data is None:
+                return Response(
+                    {"error": f"{page_no} 페이지 데이터 가져오기 실패"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
-        # 반복하며 모든 페이지 데이터를 가져온 뒤 DB 저장
-        for page in range(1, total_pages + 1):
-            params = {
-                "serviceKey": API_KEY,
-                "type": "json",
-                "numOfRows": num_of_rows,
-                "pageNo": page
-            }
-            response = requests.get(API_URL, params=params)
-            response.raise_for_status()
-
-            raw_data = response.json()
-            items = raw_data.get("body", {}).get("items", [])
-
+            # 2. 해당 페이지 데이터 저장
+            items = response_data.get("items", [])
             if not items:
-                print(f"데이터가 더 이상 없으므로, 페이지 {page}에서 중단합니다.")
+                is_last_page = True  # 더 이상 데이터가 없으면 종료
                 break
 
-            # 데이터 저장
-            for item in items:
-                medicine, created = Appearance.objects.update_or_create(
-                    item_seq=item["ITEM_SEQ"],
-                    defaults={
-                        "item_name": item["ITEM_NAME"],
-                        "entp_name": item["ENTP_NAME"],
-                        "chart": item.get("CHART", ""),
-                        "item_image": item.get("ITEM_IMAGE", ""),
-                        "print_front": item.get("PRINT_FRONT", ""),
-                        "print_back": item.get("PRINT_BACK", ""),
-                        "drug_shape": item.get("DRUG_SHAPE", ""),
-                        "color_class1": item.get("COLOR_CLASS1", ""),
-                        "color_class2": item.get("COLOR_CLASS2", ""),
-                        "line_front": item.get("LINE_FRONT", ""),
-                        "line_back": item.get("LINE_BACK", ""),
-                        "leng_long": item.get("LENG_LONG", ""),
-                        "leng_short": item.get("LENG_SHORT", ""),
-                        "thick": item.get("THICKT", ""),
-                        "img_regist_ts": item.get("IMG_REGISTR_TS", ""),
-                        "item_permit_date": item.get("ITEM_PERMIT_DATE", ""),
-                        "form_code_name": item.get("FROM_CODE_NAME", ""),
-                        "mark_code_front_anal": item.get("MARK_CODE_FRONT_ANAL", ""),
-                        "mark_code_back_anal": item.get("MARK_CODE_BACK_ANAL", ""),
-                        "mark_code_front_img": item.get("MARK_CODE_FRONT_IMG", ""),
-                        "mark_code_back_img": item.get("MARK_CODE_BACK_IMG", ""),
-                        "item_eng_name": item.get("ITEM_ENG_NAME", ""),
-                        "change_date": item.get("CHANGE_DATE", ""),
-                        "mark_code_front": item.get("MARK_CODE_FRONT", ""),
-                        "mark_code_back": item.get("MARK_CODE_BACK", ""),
-                        "edi_code": item.get("EDI_CODE", ""),
-                        "bizrno": item.get("BIZRNO", ""),
-                    }
+            saved_count = self.save_appearance_data_to_db(items)
+            total_saved_count += saved_count
+
+            # 3. 총 데이터 카운트를 확인하고 페이지를 넘김
+            total_count = response_data.get("totalCount", 0)
+            if page_no * num_of_rows >= total_count:
+                is_last_page = True  # 모든 페이지 처리 완료
+            else:
+                page_no += 1  # 다음 페이지로 이동
+
+        return Response(
+            {"message": f"총 {total_saved_count}개의 데이터가 저장되었습니다."},
+            status=status.HTTP_200_OK,
+        )
+
+
+    def fetch_page_data(self, page_no, num_of_rows):
+        """
+        공공 API로부터 약 외형 데이터를 가져옵니다.
+        """
+        try:
+            params = {
+                "serviceKey": self.API_KEY,
+                "type": "json",
+                "pageNo": page_no,
+                "numOfRows": num_of_rows
+            }
+            response = requests.get(self.API_URL, params=params)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"API 호출 실패: {response.status_code} - {response.text}")
+                return None
+        except Exception as ex:
+            print(f"API 호출 중 오류 발생: {ex}")
+            return None
+
+    @transaction.atomic
+    def save_appearance_data_to_db(self, data_list):
+        """
+        API 데이터를 Appearance 모델에 저장 또는 업데이트
+        :param data_list: API에서 가져온 외형 데이터 리스트
+        :return: 저장된 데이터 개수
+        """
+        saved_count = 0
+        appearances_to_create = []
+
+        for data in data_list:
+            try:
+                # Appearance 객체 만들기
+                appearance = Appearance(
+                    item_seq=data.get("ITEM_SEQ"),
+                    item_name=data.get("ITEM_NAME"),
+                    item_image=data.get("ITEM_IMAGE"),
+                    drug_shape=data.get("DRUG_SHAPE"),
+                    print_front=data.get("PRINT_FRONT"),
+                    print_back=data.get("PRINT_BACK"),
+                    color_class1=data.get("COLOR_CLASS1"),
+                    color_class2=data.get("COLOR_CLASS2"),
+                    line_front=data.get("LINE_FRONT"),
+                    line_back=data.get("LINE_BACK"),
+                    leng_long=data.get("LENG_LONG"),
+                    leng_short=data.get("LENG_SHORT"),
+                    thick=data.get("THICK"),
+                    img_regist_ts=data.get("IMG_REGIST_TS"),
+                    item_permit_date=data.get("ITEM_PERMIT_DATE"),
                 )
-                if not created:
-                    # 기존 데이터가 있으면 업데이트
-                    medicine.save()
+                appearances_to_create.append(appearance)
+            except Exception as ex:
+                print(f"데이터 생성 중 오류 발생: {ex}")
+                continue
 
-        return {f"message": "Data saved successfully Total count: {total_count}"}
-    except requests.exceptions.RequestException as e:
-        return {"error": str(e)}
+        # 배치로 저장
+        if appearances_to_create:
+            try:
+                Appearance.objects.bulk_create(appearances_to_create, ignore_conflicts=True)
+                saved_count += len(appearances_to_create)
+            except Exception as ex:
+                print(f"DB 저장 중 오류 발생: {ex}")
 
-# API 엔드포인트
-def fetch_data(request):
-    """DB에 저장"""
-    data = fetch_and_save_data()
-    return JsonResponse(data, json_dumps_params={"indent": 4, "ensure_ascii": False})
+        return saved_count
 
-def get_medicine_data(request):
-    """DB에 저장된 의약품 데이터를 반환하는 API"""
-    medicines = DrugInfo.objects.all().values(
-        "item_seq", "item_name", "entp_name", "consgn_manuf",
-        "etc_otc_code", "chart", "bar_code", "material_name",
-        "storage_method", "valid_term", "pack_unit", "created_at"
-    )
-    return JsonResponse({"data": list(medicines)}, json_dumps_params={"indent": 4, "ensure_ascii": False})
+class DrugListView(APIView):
+    """
+    약물 데이터의 리스트를 페이지 단위로 반환하는 뷰
+    """
+    def get(self, request):
+        try:
+            drugs = DrugInfo.objects.all()  # 모든 약물 데이터를 가져옴
+            paginator = PageNumberPagination()
+            paginator.page_size = 10  # 한 페이지에 보여줄 데이터 수 설정
+            paginated_drugs = paginator.paginate_queryset(drugs, request)  # 페이지 처리
 
-def fetch_pill_appearance_data(request):
-    data = drug_appearance_fetch()
-    return JsonResponse(data, json_dumps_params={"indent": 4, "ensure_ascii": False})
+            serializer = DrugInfoSerializer(paginated_drugs, many=True)  # 직렬화
+            return paginator.get_paginated_response(serializer.data)  # 페이징된 응답 반환
+        except Exception as ex:
+            return Response(
+                {"error": f"데이터를 가져오는 중 오류가 발생했습니다: {ex}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-def get_pill_appearance_data(request):
-    pill_appearances = Appearance.objects.all().values(
-        "item_seq", "item_name", "entp_name", "chart", "item_image", "print_front",
-        "print_back", "drug_shape", "color_class1", "color_class2", "line_front", "line_back",
-        "leng_long", "leng_short", "thick", "img_regist_ts", "item_permit_date",
-        "form_code_name", "mark_code_front_anal", "mark_code_back_anal", "mark_code_front_img",
-        "mark_code_back_img", "item_eng_name", "change_date", "mark_code_front",
-        "mark_code_back", "edi_code", "bizrno")
-    return JsonResponse({"data": list(pill_appearances)}, json_dumps_params={"indent": 4, "ensure_ascii": False})
+class DrugDetailView(APIView):
+    """
+    특정 약물의 세부 정보를 반환하는 뷰 (item_seq를 기준으로 조회)
+    """
+    def get(self, request, item_seq):
+        try:
+            drug = get_object_or_404(DrugInfo, item_seq=item_seq)  # 아이템 일련번호로 약물 검색
+            serializer = DrugInfoSerializer(drug)  # 직렬화
+            return Response(serializer.data, status=status.HTTP_200_OK)  # 직렬화된 데이터 반환
+        except Exception as ex:
+            return Response(
+                {"error": f"약물 세부 정보를 가져오는 중 오류가 발생했습니다: {ex}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class DrugSearchByNameView(APIView):
+    """
+    약물 이름을 기준으로 데이터를 검색해 반환하는 뷰
+    """
+    def get(self, request):
+        try:
+            query = request.query_params.get("name", "")  # URL 파라미터로 검색어 가져오기
+            if not query:
+                return Response(
+                    {"error": "검색어를 입력해주세요."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            drugs = DrugInfo.objects.filter(item_name__icontains=query)  # 이름 기반 검색
+            if not drugs.exists():
+                return Response(
+                    {"message": "검색된 결과가 없습니다."},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            serializer = DrugInfoSerializer(drugs, many=True)  # 직렬화
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(
+                {"error": f"검색 중 오류가 발생했습니다: {ex}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+class AppearanceDetailView(APIView):
+    """
+    특정 약물의 외형 정보를 반환하는 뷰 (item_seq를 기준으로 조회)
+    """
+    def get(self, request, item_seq):
+        try:
+            appearance = get_object_or_404(Appearance, item_seq=item_seq)  # 외형 데이터를 item_seq로 검색
+            serializer = AppearanceSerializer(appearance)  # 직렬화
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as ex:
+            return Response(
+                {"error": f"외형 데이터를 가져오는 중 오류가 발생했습니다: {ex}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+# class ContraindicationsListView(APIView):
+#     """
+#     특정 약물의 병용 금기 데이터를 페이징하여 반환하는 뷰
+#     """
+#     def get(self, request, item_seq):
+#         try:
+#             # 해당 약물의 병용 금기 데이터를 검색
+#             contraindications = DrugContraindication.objects.filter(item_seq=item_seq)
+#
+#             if not contraindications.exists():
+#                 return Response(
+#                     {"message": "병용 금기 데이터가 없습니다."},
+#                     status=status.HTTP_404_NOT_FOUND,
+#                 )
+#
+#             # 페이징 처리
+#             paginator = PageNumberPagination()
+#             paginator.page_size = 10  # 한 페이지당 10개의 데이터
+#             paginated_contraindications = paginator.paginate_queryset(contraindications, request)
+#
+#             # 데이터를 직렬화 후 페이징된 응답 반환
+#             serializer = DrugContraindicationSerializer(paginated_contraindications, many=True)
+#             return paginator.get_paginated_response(serializer.data)
+#         except Exception as ex:
+#             return Response(
+#                 {"error": f"병용 금기 데이터를 가져오는 중 문제가 발생했습니다: {ex}"},
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             )
+
+class CheckInteractionsView(View):
+    def post(self, request, *args, **kwargs):
+        import json
+
+        try:
+            # 요청 데이터 파싱
+            body = json.loads(request.body)
+            item_seq_list = body.get("itemSeqList", [])
+            if not item_seq_list or not isinstance(item_seq_list, list):
+                return JsonResponse({"error": "Invalid itemSeqList format"}, status=400)
+
+            # 병용 금기 검사 (임시 로직; 예: 특정 조건에 따라 임의로 false 설정)
+            # 이 부분은 실제 비즈니스 로직 및 데이터를 기반으로 구현
+            contraindications_view = CheckDrugContraindicationsWithPaginationView()
+            is_safe = True
+            conflicts = []
+
+            # 모든 약물 조합 비교 (O(N^2) 방식)
+            for i in range(len(item_seq_list)-1):
+                for j in range(i + 1, len(item_seq_list)):
+                    drug_a = item_seq_list[i]
+                    drug_b = item_seq_list[j]
+
+                    # CheckDrugContraindicationsWithPaginationView의 금기 확인 메서드 호출
+                    result = contraindications_view.check_contraindicated_with_pagination(drug_a, drug_b)
+
+                    # 금기일 경우 conflicts 리스트에 추가
+                    if result:
+                        conflicts.append({
+                            "drugA": drug_a,
+                            "drugB": drug_b,
+                            "reason": result.get("reason", "Unknown reason")
+                        })
+
+            # 병용 가능 여부 판단
+            is_safe = len(conflicts) == 0
+
+            # 최종 응답
+            response = {"isSafe": is_safe}
+            if conflicts:
+                response["conflicts"] = conflicts
+
+            return JsonResponse(response, status=200, json_dumps_params={'ensure_ascii': False})
+
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+
+class CheckDrugContraindicationsWithPaginationView(APIView):
+    """
+    두 약물 (A와 B)의 병용 금기 여부를 확인하는 API (페이징 처리된 병용 금기 데이터를 확인)
+    """
+    API_URL = "https://apis.data.go.kr/1471000/DURPrdlstInfoService03/getUsjntTabooInfoList03"  # 병용 금기 조회 API의 URL
+    API_KEY = "+4kJTquJH+HN8qmc6zWMIsGpgjI7AL0OM6vs0MsRERRBaBflhxYSWXua+qNYpZQijLaKcRRku0Q2jfBrTRXLmw=="  # 공공 API 키
+
+    def get(self, request):
+        """
+        GET 요청: 약물 A를 기준으로 병용 금기 데이터를 페이지 단위로 검색하여 약물 B가 포함되는지 확인
+        """
+        try:
+            drug_a = request.query_params.get("drugA")  # 약물 A의 이름 또는 ID
+            drug_b = request.query_params.get("drugB")  # 약물 B의 이름 또는 ID
+
+            # 필수 파라미터 확인
+            if not drug_a or not drug_b:
+                return Response(
+                    {"error": "drugA(약물 A)와 drugB(약물 B) 정보를 모두 제공해야 합니다."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # 페이징 처리로 병용 금기 데이터를 가져와 B가 포함되는지 확인
+            is_contraindicated = self.check_contraindicated_with_pagination(drug_a, drug_b)
+
+            # 결과 반환
+            if is_contraindicated:
+                return Response(
+                    {
+                        "message": f"약물 A({drug_a})와 약물 B({drug_b})는 병용 금기입니다.",
+                        "is_contraindicated": True,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {
+                        "message": f"약물 A({drug_a})와 약물 B({drug_b})는 병용 금기가 아닙니다.",
+                        "is_contraindicated": False,
+                    },
+                    status=status.HTTP_200_OK,
+                )
+
+        except Exception as ex:
+            return Response(
+                {"error": f"병용 금기 확인 중 오류가 발생했습니다: {ex}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def check_contraindicated_with_pagination(self, drug_a, drug_b):
+        """
+        약물 A의 병용 금기 데이터를 페이지별로 가져와 약물 B가 포함되는지 확인
+        """
+        page_no = 1
+        num_of_rows = 100  # 한 페이지에서 가져올 데이터 개수
+        is_last_page = False
+
+        while not is_last_page:
+            # 공공 API를 호출하여 병용 금기 데이터를 가져옴
+            response_data = self.fetch_contraindications_page(drug_a, page_no, num_of_rows)
+
+            if response_data is None:
+                raise Exception(f"병용 금기 데이터를 페이지 {page_no}에서 가져오는 데 실패했습니다.")
+            # if response_data is None:
+            #     break
+
+            # 현재 페이지의 병용 금기 데이터 리스트
+            contraindications = response_data.get("items", [])
+            total_count = response_data.get("totalCount", 0)  # 전체 데이터 개수
+
+            # 병용 금기 데이터에서 약물 B가 포함되는지 확인
+            for contraindication in contraindications:
+                if contraindication.get("CONTRAINDICATED_DRUG") == drug_b:
+                    return True
+
+            # 다음 페이지 처리
+            if page_no * num_of_rows >= total_count:
+                is_last_page = True
+            else:
+                page_no += 1
+
+        return False  # 병용 금기 데이터에서 약물 B를 찾을 수 없음
+
+    def fetch_contraindications_page(self, drug_a, page_no, num_of_rows):
+        """
+        특정 페이지의 병용 금기 데이터를 공공 API에서 가져오기
+        """
+        try:
+            params = {
+                "serviceKey": self.API_KEY,
+                "type": "json",
+                "typeName": "병용금기",
+                "pageNo": page_no,
+                "numOfRows": num_of_rows,
+                "itemSeq": drug_a,  # 약물 번호로 검색
+            }
+            response = requests.get(self.API_URL, params=params)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                print(f"API 호출 실패: {response.status_code} - {response.text}")
+                return None
+        except Exception as ex:
+            print(f"API 호출 중 오류 발생: {ex}")
+            return None
+
+# if __name__ == "__main__":
+#     SERVICE_KEY = "+4kJTquJH+HN8qmc6zWMIsGpgjI7AL0OM6vs0MsRERRBaBflhxYSWXua+qNYpZQijLaKcRRku0Q2jfBrTRXLmw=="
+#     A_ITEM_SEQ = "201405281"
+#     B_ITEM_SEQ = "200402617",
+#
+#     result_data = check_coadministration_info(SERVICE_KEY, A_ITEM_SEQ, B_ITEM_SEQ)
+#     if result_data["coadministration_ok"]:
+#         print(f"{A_ITEM_SEQ}와(과) {B_ITEM_SEQ}는 함께 복용 가능합니다.")
+#     else:
+#         print(f"{A_ITEM_SEQ}와(과) {B_ITEM_SEQ}는 병용금기 대상입니다.")
+#         print(f"사유: {result_data['reason']}")

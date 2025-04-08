@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Black">
+<<<<<<< Updated upstream
     <option name="sdkName" value="Python 3.11 (fill_predict)" />
+=======
+    <option name="sdkName" value="Python 3.11 (capstone-2025-20)" />
+>>>>>>> Stashed changes
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.11 (capstone-2025-20)" project-jdk-type="Python SDK" />
 </project>
