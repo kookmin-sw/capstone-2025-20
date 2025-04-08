@@ -10,15 +10,9 @@ class DrugInfo(models.Model):
     chart = models.TextField(null=True, blank=True)  # 의약품 형태
     bar_code = models.TextField(null=True, blank=True)  # 바코드
     material_name = models.TextField(null=True, blank=True)  # 성분 정보
-    ee_doc_id = models.TextField(null=True, blank=True) # 효능,효과
-    ud_doc_id = models.TextField(null=True, blank=True)  # 용법,용량
-    nb_doc_id = models.TextField(null=True, blank=True)  # 사용상의 주의사항
     storage_method = models.CharField(max_length=255, null=True, blank=True)  # 보관 방법
     valid_term = models.CharField(max_length=255, null=True, blank=True)  # 유효 기간
     pack_unit = models.CharField(max_length=100, null=True, blank=True)  # 포장 단위
-    ee_doc_data = models.TextField(null=True, blank=True)  # 효능,효과
-    ud_doc_data = models.TextField(null=True, blank=True)  # 용법,용량
-    nb_doc_data = models.TextField(null=True, blank=True)  #사용상의 주의사항
     created_at = models.DateTimeField(auto_now_add=True)  # 데이터 저장 시간
 
     def __str__(self):
@@ -56,6 +50,4 @@ class Appearance(models.Model):
 
     def __str__(self):
         return self.item_name
-
-
 

@@ -5,7 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="36c4cf63-7bd2-493b-ad54-2d6fd0361046" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.idea/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.idea/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/myapi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/myapi/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pill/migrations/0003_druginfo_ee_doc_data_druginfo_ee_doc_id_and_more.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/views.py" afterDir="false" />
@@ -21,21 +27,21 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "5starss"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;5starss&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/kookmin-sw/capstone-2025-20.git",
-    "accountId": "9c890592-115e-477a-ad22-21237082b9e6"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/kookmin-sw/capstone-2025-20.git&quot;,
+    &quot;accountId&quot;: &quot;9c890592-115e-477a-ad22-21237082b9e6&quot;
   }
-}]]></component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 0
-}]]></component>
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="2ukwZfn2PxWxrJarO2gVv3noNbe" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -48,6 +54,7 @@
     "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "django-server",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/capstone-2025-20/backend/pill",
     "node.js.detected.package.eslint": "true",
@@ -65,7 +72,7 @@
       <recent name="C:\capstone-2025-20\backend\pill" />
     </key>
   </component>
-  <component name="RunManager" selected="Django Server.capstone-2025-20">
+  <component name="RunManager" selected="Django 서버.capstone-2025-20">
     <configuration name="views" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="capstone-2025-20" />
       <option name="ENV_FILES" value="" />
@@ -136,6 +143,7 @@
       <option name="presentableId" value="Default" />
       <updated>1742805937474</updated>
       <workItem from="1742805938927" duration="57682000" />
+      <workItem from="1744098237567" duration="211000" />
     </task>
     <servers />
   </component>
