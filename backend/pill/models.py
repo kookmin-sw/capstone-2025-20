@@ -24,6 +24,9 @@ class DrugInfo(models.Model):
     def __str__(self):
         return self.item_name
 
+    class Meta:
+        ordering = ['item_seq']  # 기본 정렬
+
 class Appearance(models.Model):
     item_seq = models.CharField(max_length=20, primary_key=True)  # 의약품 고유번호
     item_name = models.CharField(max_length=255)  # 의약품 이름
@@ -57,3 +60,5 @@ class Appearance(models.Model):
     def __str__(self):
         return self.item_name
 
+    class Meta:
+        ordering = ['item_seq']  # 기본 정렬

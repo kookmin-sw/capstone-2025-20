@@ -12,8 +12,3 @@ class AppearanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appearance
         fields = '__all__'
-
-# class DrugContraindicationSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Containdication
-#         fields = '__all__'
