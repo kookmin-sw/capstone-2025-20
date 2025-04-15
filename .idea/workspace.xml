@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="36c4cf63-7bd2-493b-ad54-2d6fd0361046" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/751a6ecf-7009-495c-9e8b-11be35997499.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/751a6ecf-7009-495c-9e8b-11be35997499.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pill/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pill/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pill/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,10 +46,12 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Django Server.capstone-2025-20.executor": "Debug",
+    "Django 서버.capstone-2025-20.executor": "Debug",
     "Python.views.executor": "Run",
     "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
     "git-widget-placeholder": "django-server",
     "ignore.virus.scanning.warn.message": "true",
     "last_opened_file_path": "C:/capstone-2025-20/backend/pill",
@@ -56,7 +60,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
+    "settings.editor.selected.configurable": "com.intellij.python.django.customization.DjangoModulesConfigurable",
     "sql.rename.search.for.storage.occurrences": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -138,7 +142,7 @@
       <option name="presentableId" value="Default" />
       <updated>1742805937474</updated>
       <workItem from="1742805938927" duration="57682000" />
-      <workItem from="1744098237567" duration="740000" />
+      <workItem from="1744098237567" duration="20525000" />
     </task>
     <servers />
   </component>
