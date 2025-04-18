@@ -51,7 +51,7 @@ class FetchAndSaveDrugDataView(APIView):
                 is_last_page = True  # 더 이상 데이터가 없으면 종료
                 break
 
-            saved_count = self.save_data_to_db(items)
+            saved_count = self.update_data_to_db(items)
             total_saved_count += saved_count
 
             total_count = response_data.get("body", {}).get("totalCount", 0)
@@ -88,13 +88,14 @@ class FetchAndSaveDrugDataView(APIView):
                 return None
 
     @transaction.atomic
-    def save_data_to_db(self, data_list):
+    def update_data_to_db(self, data_list):
         """
         API 데이터를 DB에 저장하는 함수
         :param data_list: API에서 가져온 데이터의 리스트
         :return: 저장된 데이터 개수
         """
         saved_count = 0
+        seq_list = [] # seq만 따로 저장
         drugs_to_create = []
 
         for data in data_list:
@@ -121,6 +122,8 @@ class FetchAndSaveDrugDataView(APIView):
                 )
                 drugs_to_create.append(drug)
 
+                seq_list.append(data.get("ITEM_SEQ"))
+
             except Exception as ex:
                 print(f"데이터 생성 중 오류 발생: {ex}")
                 continue
@@ -132,7 +135,26 @@ class FetchAndSaveDrugDataView(APIView):
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
+        # 불필요 데이터 삭제
+        self.delete_db_data(seq_list)
+
         return saved_count
+
+    def delete_db_data(self, seq_list):
+        """
+           API에서 가져온 데이터를 기준으로 DB에 저장된 남은 데이터를 삭제
+           :param seq_list: API에서 가져온 데이터 SEQ 리스트
+           """
+        # DB에 저장된 모든 데이터의 SEQ 조회
+        existing_data = set(DrugInfo.objects.values_list("item_seq", flat=True))
+
+        # 삭제 대상 ID 계산
+        delete_data = existing_data - set(seq_list)
+
+        # 삭제 실행
+        if delete_data:
+            DrugInfo.objects.filter(item_seq__in=delete_data).delete()
+            print(f"총 {len(delete_data)}개의 데이터를 삭제했습니다.")
 
 
 class FetchAndSaveAppearanceDataView(APIView):
@@ -168,7 +190,7 @@ class FetchAndSaveAppearanceDataView(APIView):
                 is_last_page = True  # 더 이상 데이터가 없으면 종료
                 break
 
-            saved_count = self.save_appearance_data_to_db(items)
+            saved_count = self.update_appearance_data_to_db(items)
             total_saved_count += saved_count
 
             # 3. 총 데이터 카운트를 확인하고 페이지를 넘김
@@ -206,13 +228,14 @@ class FetchAndSaveAppearanceDataView(APIView):
             return None
 
     @transaction.atomic
-    def save_appearance_data_to_db(self, data_list):
+    def update_appearance_data_to_db(self, data_list):
         """
         API 데이터를 Appearance 모델에 저장 또는 업데이트
         :param data_list: API에서 가져온 외형 데이터 리스트
         :return: 저장된 데이터 개수
         """
         saved_count = 0
+        seq_list = []
         appearances_to_create = []
 
         for data in data_list:
@@ -236,6 +259,9 @@ class FetchAndSaveAppearanceDataView(APIView):
                     item_permit_date=data.get("ITEM_PERMIT_DATE"),
                 )
                 appearances_to_create.append(appearance)
+
+                seq_list.append(data.get("ITEM_SEQ"))
+
             except Exception as ex:
                 print(f"데이터 생성 중 오류 발생: {ex}")
                 continue
@@ -248,7 +274,26 @@ class FetchAndSaveAppearanceDataView(APIView):
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
+        # 불필요 데이터 삭제
+        self.delete_db_data(seq_list)
+
         return saved_count
+
+    def delete_db_data(self, seq_list):
+        """
+            API에서 가져온 데이터를 기준으로 DB에 저장된 남은 데이터를 삭제
+            :param seq_list: API에서 가져온 데이터 리스트
+            """
+        # DB에 저장된 모든 데이터의 ID 조회 (DB 모델은 DrugInfo를 가정)
+        existing_data_ids = set(Appearance.objects.values_list("item_seq", flat=True))
+
+        # 삭제 대상 ID 계산
+        delete_data = existing_data_ids - set(seq_list)
+
+        # 삭제 실행
+        if delete_data:
+            Appearance.objects.filter(item_seq__in=delete_data).delete()
+            print(f"총 {len(delete_data)}개의 데이터를 삭제했습니다.")
 
 class DrugListView(APIView):
     """
