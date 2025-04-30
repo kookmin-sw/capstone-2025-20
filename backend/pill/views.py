@@ -4,12 +4,14 @@ from django.shortcuts import render
 import logging
 import requests
 from django.http import JsonResponse
-# from django.views.decorators.http import require_GET
+from django.core.cache import cache
 from django.db import transaction
 from django.db.models import Q
 from django.db.models import Prefetch
 from django.views import View
 from django.shortcuts import get_object_or_404
+from rest_framework.generics import ListAPIView
+from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -18,15 +20,14 @@ from rest_framework import status
 from .models import *
 from .serializers import *
 
-class FetchAndSaveDrugDataView(APIView):
+class SaveDrugDataView(APIView):
     """
     공공 API로부터 데이터를 가져와 DB에 저장하는 기능
     """
-
     API_URL = "http://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05"
     API_KEY =
 
-    def get(self, request):
+    def post(self, request):
         """
         GET 요청 시 공공 API에서 데이터 fetch
         """
@@ -148,7 +149,7 @@ class FetchAndSaveDrugDataView(APIView):
         # DB에 저장된 모든 데이터의 SEQ 조회
         existing_data = set(DrugInfo.objects.values_list("item_seq", flat=True))
 
-        # 삭제 대상 ID 계산
+        # 삭제 대상 계산
         delete_data = existing_data - set(seq_list)
 
         # 삭제 실행
@@ -157,7 +158,7 @@ class FetchAndSaveDrugDataView(APIView):
             print(f"총 {len(delete_data)}개의 데이터를 삭제했습니다.")
 
 
-class FetchAndSaveAppearanceDataView(APIView):
+class SaveAppearanceDataView(APIView):
     """
     공공 API로부터 약의 외형 데이터를 가져와 `Appearance` 모델에 저장하는 뷰
     """
@@ -165,7 +166,7 @@ class FetchAndSaveAppearanceDataView(APIView):
     API_URL = "http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01"
     API_KEY =
 
-    def get(self, request):
+    def post(self, request):
         """
         GET: 외형 데이터를 저장하거나 업데이트
         """
@@ -284,10 +285,10 @@ class FetchAndSaveAppearanceDataView(APIView):
             API에서 가져온 데이터를 기준으로 DB에 저장된 남은 데이터를 삭제
             :param seq_list: API에서 가져온 데이터 리스트
             """
-        # DB에 저장된 모든 데이터의 ID 조회 (DB 모델은 DrugInfo를 가정)
+        # DB에 저장된 모든 데이터의 SEQ 조회
         existing_data_ids = set(Appearance.objects.values_list("item_seq", flat=True))
 
-        # 삭제 대상 ID 계산
+        # 삭제 대상 계산
         delete_data = existing_data_ids - set(seq_list)
 
         # 삭제 실행
@@ -295,24 +296,14 @@ class FetchAndSaveAppearanceDataView(APIView):
             Appearance.objects.filter(item_seq__in=delete_data).delete()
             print(f"총 {len(delete_data)}개의 데이터를 삭제했습니다.")
 
-class DrugListView(APIView):
+class DrugListView(ListAPIView):
     """
     약물 데이터의 리스트를 페이지 단위로 반환하는 뷰
     """
-    def get(self, request):
-        try:
-            drugs = DrugInfo.objects.all() # 모든 약물 데이터를 가져옴
-            paginator = PageNumberPagination()
-            paginator.page_size = 10  # 한 페이지에 보여줄 데이터 수 설정
-            paginated_drugs = paginator.paginate_queryset(drugs, request)  # 페이지 처리
-
-            serializer = DrugInfoSerializer(paginated_drugs, many=True)  # 직렬화
-            return paginator.get_paginated_response(serializer.data)  # 페이징된 응답 반환
-        except Exception as ex:
-            return Response(
-                {"error": f"데이터를 가져오는 중 오류가 발생했습니다: {ex}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+    queryset = DrugInfo.objects.all()
+    serializer_class = DrugInfoSerializer
+    filter_backends = [SearchFilter]  # 검색 기능 추가
+    search_fields = ['item_seq', 'item_name', 'entp_name']  # 검색 가능한 필드 정의
 
 class DrugSearchByItemSeq(APIView):
     """
@@ -323,11 +314,8 @@ class DrugSearchByItemSeq(APIView):
             drug = get_object_or_404(DrugInfo, item_seq=item_seq)  # 아이템 일련번호로 약물 검색
             serializer = DrugInfoSerializer(drug)  # 직렬화
             return Response(serializer.data, status=status.HTTP_200_OK)  # 직렬화된 데이터 반환
-        except Exception as ex:
-            return Response(
-                {"error": f"약물 세부 정보를 가져오는 중 오류가 발생했습니다: {ex}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        except DrugInfo.DoesNotExist:
+            return Response({"error": "Drug not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class DrugSearchByNameView(APIView):
     """
@@ -415,7 +403,6 @@ class SearchDrugByAppearanceView(APIView):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
-
 class AppearanceDetailView(APIView):
     """
     특정 약물의 외형 정보를 반환하는 뷰 (item_seq를 기준으로 조회)
@@ -444,7 +431,7 @@ class CheckInteractionsView(View):
 
             # 병용 금기 검사 (임시 로직; 예: 특정 조건에 따라 임의로 false 설정)
             # 이 부분은 실제 비즈니스 로직 및 데이터를 기반으로 구현
-            contraindications_view = CheckDrugContraindicationsWithPaginationView()
+            contraindications_view = CheckDrugContraindicationsView()
             is_safe = True
             conflicts = []
 
@@ -480,8 +467,7 @@ class CheckInteractionsView(View):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
-
-class CheckDrugContraindicationsWithPaginationView(APIView):
+class CheckDrugContraindicationsView(APIView):
     """
     두 약물 (A와 B)의 병용 금기 여부를 확인하는 API (페이징 처리된 병용 금기 데이터를 확인)
     """
@@ -495,6 +481,7 @@ class CheckDrugContraindicationsWithPaginationView(APIView):
         try:
             drug_a = request.query_params.get("drugA")  # 약물 A의 이름 또는 ID
             drug_b = request.query_params.get("drugB")  # 약물 B의 이름 또는 ID
+            source = "API"
 
             # 필수 파라미터 확인
             if not drug_a or not drug_b:
@@ -502,9 +489,20 @@ class CheckDrugContraindicationsWithPaginationView(APIView):
                     {"error": "drugA(약물 A)와 drugB(약물 B) 정보를 모두 제공해야 합니다."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            # 캐시 키 생성 (약물 A와 약물 B 조합에 대한 고유 키)
+            cache_key = f"contraindication_{min(drug_a, drug_b)}_{max(drug_a, drug_b)}"
 
-            # 페이징 처리로 병용 금기 데이터를 가져와 B가 포함되는지 확인
-            is_contraindicated = self.check_contraindicated_with_pagination(drug_a, drug_b)
+            # 캐시 확인
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                # 캐시에 저장된 데이터가 있다면 반환
+                is_contraindicated = cached_result
+                source = "CACHE"
+            else:
+                # 캐시에서 결과를 찾지 못한 경우 API 호출
+                is_contraindicated = self.check_contraindicated_with_pagination(drug_a, drug_b)
+                # 결과를 캐시에 저장 (24시간 동안 저장)
+                cache.set(cache_key, is_contraindicated, timeout=24 * 60 * 60)
 
             # 결과 반환
             if is_contraindicated:
@@ -512,6 +510,7 @@ class CheckDrugContraindicationsWithPaginationView(APIView):
                     {
                         "message": f"약물 A({drug_a})와 약물 B({drug_b})는 병용 금기입니다.",
                         "is_contraindicated": True,
+                        "sourse": source,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -520,6 +519,7 @@ class CheckDrugContraindicationsWithPaginationView(APIView):
                     {
                         "message": f"약물 A({drug_a})와 약물 B({drug_b})는 병용 금기가 아닙니다.",
                         "is_contraindicated": False,
+                        "sourse": source,
                     },
                     status=status.HTTP_200_OK,
                 )
@@ -544,8 +544,6 @@ class CheckDrugContraindicationsWithPaginationView(APIView):
 
             if response_data is None:
                 raise Exception(f"병용 금기 데이터를 페이지 {page_no}에서 가져오는 데 실패했습니다.")
-            # if response_data is None:
-            #     break
 
             # 현재 페이지의 병용 금기 데이터 리스트
             contraindications = response_data.get("body", {}).get("items", [])
