@@ -66,16 +66,6 @@ class _MyScreenState extends State<MyScreen> {
               },
             ),
           ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[300],
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('돌아가기'),
-          ),
-          const SizedBox(height: 16),
         ],
       ),
     );
@@ -126,18 +116,12 @@ class _MyScreenState extends State<MyScreen> {
               children: [
                 Row(
                   children: [
-                    ClipRect(
-                      child: Align(
-                        alignment: Alignment.centerLeft, // 왼쪽 기준으로 자르기
-                        widthFactor: 0.5,                // 가로 절반만 보이게
-                        child: Image.network(
-                          pill.itemImage,
-                          width: 160, // 원래 너비 기준
-                          height: 80,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.medication),
-                        ),
-                      ),
+                    Image.network(
+                      pill.itemImage,
+                      width: 100,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.medication),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -161,15 +145,15 @@ class _MyScreenState extends State<MyScreen> {
                 AnimatedCrossFade(
                   firstChild: const SizedBox.shrink(),
                   secondChild: Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
+                    padding: const EdgeInsets.only(top: 12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('효능: ${pill.efcyQesitm}'),
-                        Text('사용법: ${pill.useMethodQesitm}'),
-                        Text('주의사항: ${pill.atpnQesitm}'),
-                        Text('상호작용: ${pill.intrcQesitm}'),
-                        Text('부작용: ${pill.seQesitm}'),
+                        _buildInfoRow('효능', pill.efcyQesitm),
+                        _buildInfoRow('사용법', pill.useMethodQesitm),
+                        _buildInfoRow('주의사항', pill.atpnQesitm),
+                        _buildInfoRow('상호작용', pill.intrcQesitm),
+                        _buildInfoRow('부작용', pill.seQesitm),
                       ],
                     ),
                   ),
@@ -177,12 +161,36 @@ class _MyScreenState extends State<MyScreen> {
                       ? CrossFadeState.showSecond
                       : CrossFadeState.showFirst,
                   duration: const Duration(milliseconds: 100),
-                ),
+                )
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildInfoRow(String label, String content) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            content,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ],
+      ),
     );
   }
 }
