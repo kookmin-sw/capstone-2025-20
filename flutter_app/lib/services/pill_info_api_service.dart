@@ -61,4 +61,44 @@ class PillInfoApiService {
       return [];
     }
   }
+
+  static Future<List<Pill>> fetchPillsByFeatures({
+    required List<String> shapeList,
+    required List<String> colorList,
+    required List<String> formList,
+    required String identifier,
+  }) async {
+    final uri = Uri.parse(ApiConstants.featureSearchUrl);
+
+    final body = jsonEncode({
+      'shapes': shapeList,
+      'colors': colorList,
+      'forms': formList,
+      'print': identifier,
+    });
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode != 200) {
+        print('서버 오류: ${response.statusCode}');
+        return [];
+      }
+
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      final items = data['body']['items'] as List<dynamic>?;
+
+      if (items == null) return [];
+
+      return items.map((item) => Pill.fromJson(item)).toList();
+    } catch (e, stacktrace) {
+      print('Error in fetchPillsByFeatures: $e');
+      print('Stacktrace: $stacktrace');
+      return [];
+    }
+  }
 }
