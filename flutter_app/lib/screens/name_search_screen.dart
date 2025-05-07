@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../model/pill.dart';
 import '../services/pill_info_api_service.dart';
 import '../utils/pill_storage.dart';
+import '../widgets/search_result_list.dart';
 
 class NameSearchScreen extends StatefulWidget {
   const NameSearchScreen({super.key});
@@ -66,34 +67,10 @@ class _NameSearchScreenState extends State<NameSearchScreen> {
             const SizedBox(height: 16),
             if (_isLoading)
               const CircularProgressIndicator()
-            else if (_searchResults.isEmpty)
-              const Text('검색 결과가 없습니다.')
             else
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _searchResults.length,
-                  itemBuilder: (context, index) {
-                    final pill = _searchResults[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: ListTile(
-                        leading: Image.network(
-                          pill.itemImage,
-                          width: 40,
-                          height: 40,
-                          errorBuilder: (_, __, ___) =>
-                          const Icon(Icons.medication),
-                        ),
-                        title: Text(pill.itemName),
-                        subtitle: Text(pill.entpName),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.add),
-                          onPressed: () => _addPill(pill.itemSeq),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              SearchResultList(
+                pills: _searchResults,
+                onAdd: _addPill,
               ),
           ],
         ),
