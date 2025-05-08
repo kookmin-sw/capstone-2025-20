@@ -24,10 +24,33 @@
             background-color: #40cc88;
             color: white;
             padding: 1rem;
-            text-align: center;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0px 5px 5px #9c9c9c;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            overflow-x: auto;
+            text-align: center;
+        }
+
+        nav a {
+            margin: 0 1rem;
+            color: white;
+            text-decoration: none;
+            color: white;
+            text-decoration: none;
+            padding: 0.3rem 0.6rem;
+            white-space: nowrap;
+            font-size: 0.95rem;
+        }
+
+        nav a:hover {
+            background-color: #39bc7c;
+            border-radius: 5px;
+            transition: all 0.2s ease;
         }
 
         section {
@@ -71,6 +94,13 @@
             color: #004d99;
             text-decoration: underline;
         }
+
+        @media (max-width: 600px) {
+            nav {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -78,7 +108,7 @@
     <header>
         <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;">
             <div style="flex: 0 0 auto;">
-                <img src="icon_transparent2.png" alt="뭐약 로고" style="height: 100px;">
+                <img src="icon_transparent2.png" alt="뭐약 로고" style="height: 60px;">
             </div>
     
             <div style="display: flex; align-items: baseline; gap: 1rem;">
@@ -90,16 +120,16 @@
         </div>
     </header>
 
-    <nav style="box-shadow: 0px 5px 5px #9c9c9c;">
-        <a href="#intro" style="margin: 0 1rem; color: white; text-decoration: none;">서비스 소개</a>
-        <a href="#effect" style="margin: 0 1rem; color: white; text-decoration: none;">기대 효과</a>
-        <a href="#architecture" style="margin: 0 1rem; color: white; text-decoration: none;">아키텍처</a>
-        <a href="#features" style="margin: 0 1rem; color: white; text-decoration: none;">주요 기능</a>
-        <a href="#team" style="margin: 0 1rem; color: white; text-decoration: none;">팀원 소개</a>
-        <a href="#demo" style="margin: 0 1rem; color: white; text-decoration: none;">시연 영상</a>
-        <a href="#tech" style="margin: 0 1rem; color: white; text-decoration: none;">기술 스택</a>
-        <a href="#downloads" style="margin: 0 1rem; color: white; text-decoration: none;">자료 보기</a>
-        <a href="https://github.com/kookmin-sw/capstone-2025-20" target="_blank" style="margin: 0 1rem; color: white; text-decoration: underline;">GitHub</a>
+    <nav>
+        <a href="#intro">서비스 소개</a>
+        <a href="#effect">기대 효과</a>
+        <a href="#architecture">아키텍처</a>
+        <a href="#features">주요 기능</a>
+        <a href="#team">팀원 소개</a>
+        <a href="#demo">시연 영상</a>
+        <a href="#tech">기술 스택</a>
+        <a href="#downloads">자료 보기</a>
+        <a href="https://github.com/kookmin-sw/capstone-2025-20" target="_blank">GitHub</a>
     </nav>
 
     <section id="intro">
@@ -198,10 +228,17 @@
 
     <section id="demo">
         <h2>시연 영상</h2>
-        <video controls width="100%">
-            <source src="demo.mp4" type="video/mp4">
-            지원하지 않는 브라우저입니다.
-        </video>
+        <div style="position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 10px;">
+        <iframe 
+            src="https://www.youtube.com/embed/cUEtNkS8few?si=lZmkWFgkun_MamBG"
+            title="YouTube video player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen
+            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+        </iframe>
+        </div>
     </section>
 
     <section id="tech">
