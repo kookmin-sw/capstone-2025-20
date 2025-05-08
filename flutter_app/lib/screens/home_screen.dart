@@ -81,7 +81,7 @@ class HomeScreen extends StatelessWidget {
               ),
               buildButton(
                 context: context,
-                label: '특징으로 검색',
+                label: '생김새로 검색',
                 routeName: '/feature',
               ),
               buildButton(

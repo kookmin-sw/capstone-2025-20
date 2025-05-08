@@ -1,12 +1,261 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>뭐약 소개 페이지</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+        }
+
+        header, footer {
+            background-color: #6feeb1;
+            color: #4A4B43;
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        nav {
+            background-color: #40cc88;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        section {
+            padding: 2rem;
+            max-width: 900px;
+            margin: auto;
+            background-color: white;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+
+        h2 {
+            color: #39bc7c;
+        }
+
+        img.screenshot {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+        }
+
+        .team-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .team-list > div {
+            flex: 1 1 45%;
+            background-color: #eef;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .tech-stack, .downloads {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .downloads li a {
+            color: #004d99;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <h1>뭐약의 소개 페이지입니다.</h1>
-    <p>작업 중입니다.</p>
+
+    <header>
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 2rem;">
+            <div style="flex: 0 0 auto;">
+                <img src="icon_transparent2.png" alt="뭐약 로고" style="height: 100px;">
+            </div>
+    
+            <div style="display: flex; align-items: baseline; gap: 1rem;">
+                <h1 style="font-size: 2.5rem; margin: 0;">뭐약</h1>
+                <p style="margin: 0; font-size: 1.2rem;">알약 검색 및 병용 가능 여부 확인 어플리케이션</p>
+            </div>
+    
+            <div style="flex: 0 0 auto; width: 80px;"></div>
+        </div>
+    </header>
+
+    <nav style="box-shadow: 0px 5px 5px #9c9c9c;">
+        <a href="#intro" style="margin: 0 1rem; color: white; text-decoration: none;">서비스 소개</a>
+        <a href="#effect" style="margin: 0 1rem; color: white; text-decoration: none;">기대 효과</a>
+        <a href="#architecture" style="margin: 0 1rem; color: white; text-decoration: none;">아키텍처</a>
+        <a href="#features" style="margin: 0 1rem; color: white; text-decoration: none;">주요 기능</a>
+        <a href="#team" style="margin: 0 1rem; color: white; text-decoration: none;">팀원 소개</a>
+        <a href="#demo" style="margin: 0 1rem; color: white; text-decoration: none;">시연 영상</a>
+        <a href="#tech" style="margin: 0 1rem; color: white; text-decoration: none;">기술 스택</a>
+        <a href="#downloads" style="margin: 0 1rem; color: white; text-decoration: none;">자료 보기</a>
+        <a href="https://github.com/kookmin-sw/capstone-2025-20" target="_blank" style="margin: 0 1rem; color: white; text-decoration: underline;">GitHub</a>
+    </nav>
+
+    <section id="intro">
+        <h2>서비스 소개</h2>
+        <p>
+            집에 남아 있는 약, 혹시 비슷한 증상에 맞춰 다시 복용하고 계시진 않나요?<br><br>
+
+            의약품을 임의로 복용하다 보면, 함께 먹으면 안 되는 약을 동시에 복용하는 사고로 이어질 수 있습니다.<br><br>
+
+            물론, 어떤 약을 복용해야 하는지는 전문가가 판단해야 할 영역입니다. 하지만 함께 복용해선 안 되는 약에 대한 경고 정도는, 누구나 소프트웨어를 통해 쉽게 확인할 수 있다면 좋지 않을까요?<br><br>
+
+            그 물음에서 <strong>뭐약</strong>이 시작되었습니다.<br><br>
+
+            약의 이름뿐 아니라 생김새만으로도 무슨 약인지 쉽게 찾아볼 수 있고,<br>
+            복용 중인 약물 간의 병용 가능 여부도 확인할 수 있는<br>
+            모바일 애플리케이션, <strong>뭐약</strong>입니다.
+        </p>
+    </section>
+
+    <section id="effect">
+        <h2>기대 효과</h2>
+        <p>
+            전문의의 확인이 어려운 상황에서도, 사용자가 쉽고 빠르게 의약품 정보를 확인할 수 있습니다.<br><br>
+            또한, 복용 중인 약물 간의 병용 금기 여부를 자동으로 판단해 보다 안전한 복약을 돕고, 약물 사고를 예방하는 데 기여할 수 있습니다.<br><br>
+            특히, 복용 약물이 많은 고령자나 만성질환자에게는 실질적인 약물 사고 예방 효과를 기대할 수 있습니다.
+        </p>
+    </section>
+
+    <section id="architecture">
+        <h2>아키텍처</h2>
+        <img src="아키텍쳐.png" alt="앱 아키텍처 다이어그램" class="screenshot">
+    </section>
+
+    <section id="features">
+        <h2>주요 기능</h2>
+        <div style="display: flex; flex-direction: column; gap: 3rem;">
+
+        <!-- 홈 화면 -->
+        <div>
+        <h3>홈 화면</h3>
+        <div style="overflow-x: auto; white-space: nowrap;">
+            <img src="screenshots/home_screen.png" alt="홈 화면" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+        </div>
+        </div>
+    
+        <!-- 카메라로 검색 -->
+        <div>
+        <h3>카메라로 검색</h3>
+        <div style="overflow-x: auto; white-space: nowrap;">
+            <img src="screenshots/camera_search.png" alt="카메라 검색" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/search_result.png" alt="검색 결과" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+        </div>
+        </div>
+    
+        <!-- 생김새로 검색 -->
+        <div>
+        <h3>생김새로 검색</h3>
+        <div style="overflow-x: auto; white-space: nowrap;">
+            <img src="screenshots/feature_search_1.png" alt="생김새 검색 1" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/feature_search_2.png" alt="생김새 검색 2" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/feature_search_3.png" alt="생김새 검색 3" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/feature_search_4.png" alt="생김새 검색 4" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/feature_search_5.png" alt="생김새 검색 5" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/search_result.png" alt="검색 결과" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+        </div>
+        </div>
+    
+        <!-- 제품명으로 검색 -->
+        <div>
+        <h3>제품명으로 검색</h3>
+        <div style="overflow-x: auto; white-space: nowrap;">
+            <img src="screenshots/name_search.png" alt="제품명 검색" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+        </div>
+        </div>
+    
+        <!-- 나의 복용약 -->
+        <div>
+        <h3>나의 복용약</h3>
+        <div style="overflow-x: auto; white-space: nowrap;">
+            <img src="screenshots/my_screen.png" alt="나의 복용약" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+            <img src="screenshots/my_screen_detail.png" alt="복용약 상세" style="height: 300px; margin-right: 1rem; border-radius: 10px;">
+        </div>
+        </div>
+    
+    </div>
+    </section>
+
+    <section id="team">
+        <h2>팀원 소개</h2>
+        <div class="team-list">
+            <div><strong>김민철</strong> (20180485) - 팀장, 프론트엔드 총괄</div>
+            <div><strong>조원혁</strong> (20180519) - 백엔드 총괄, 데이터 관리 및 분석</div>
+
+        </div>
+    </section>
+
+    <section id="demo">
+        <h2>시연 영상</h2>
+        <video controls width="100%">
+            <source src="demo.mp4" type="video/mp4">
+            지원하지 않는 브라우저입니다.
+        </video>
+    </section>
+
+    <section id="tech">
+        <h2>기술 스택</h2>
+        <ul class="tech-stack" style="text-align: center;">
+            <li>
+                <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=Dart&logoColor=white">
+                <img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=Flutter&logoColor=white">
+            </li>
+            <li>
+                <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=Python&logoColor=white">
+                <img src="https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=Django&logoColor=white">
+                <img src="https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=SQLite&logoColor=white">
+                <img src="https://img.shields.io/badge/OpenAI API-412991?style=for-the-badge&logo=OpenAI&logoColor=white">
+            </li>
+            <li>
+                <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=Git&logoColor=white">
+                <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white">
+                <img src="https://img.shields.io/badge/Amazon EC2-FF9900?style=for-the-badge&logo=Amazon EC2&logoColor=white">
+                <img src="https://img.shields.io/badge/Android Studio-3DDC84?style=for-the-badge&logo=Android Studio&logoColor=white">
+                <img src="https://img.shields.io/badge/PyCharm-000000?style=for-the-badge&logo=PyCharm&logoColor=white">
+            </li>
+            <li>
+                <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=Slack&logoColor=white">
+                <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=Discord&logoColor=white">
+                <img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=Notion&logoColor=white">
+                <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=white">
+            </li>
+        </ul>
+    </section>
+
+    <section id="downloads">
+        <h2>발표 자료 및 포스터</h2>
+        <ul class="downloads">
+            <li><a href="중간 발표 자료.pdf" target="_blank">📄 발표 자료 (PDF)</a></li>
+            <li><a href="포스터.pdf" target="_blank">🖼️ 소개 포스터</a></li>
+        </ul>
+    </section>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener("click", function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute("href"));
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth" });
+                }
+            });
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2025 뭐약 팀. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>
