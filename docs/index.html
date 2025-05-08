@@ -95,6 +95,67 @@
             text-decoration: underline;
         }
 
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 101;
+            background-color: #40cc88;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 4px 0;
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            background-color: #40cc88;
+            position: fixed;
+            top: 60px;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 5px;
+            z-index: 100;
+        }
+
+        .mobile-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8rem !important;
+            }
+
+            header p {
+                font-size: 0.9rem !important;
+                text-align: center;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .mobile-menu.show {
+                display: flex;
+            }
+        }
+
         @media (max-width: 600px) {
             nav {
                 font-size: 0.9rem;
@@ -119,6 +180,26 @@
             <div style="flex: 0 0 auto; width: 80px;"></div>
         </div>
     </header>
+
+    <!-- 햄버거 메뉴 버튼 (모바일용) -->
+    <button class="hamburger" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+
+    <!-- 모바일 전용 메뉴 -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#intro">서비스 소개</a>
+        <a href="#effect">기대 효과</a>
+        <a href="#architecture">아키텍처</a>
+        <a href="#features">주요 기능</a>
+        <a href="#team">팀원 소개</a>
+        <a href="#demo">시연 영상</a>
+        <a href="#tech">기술 스택</a>
+        <a href="#downloads">자료 보기</a>
+        <a href="https://github.com/kookmin-sw/capstone-2025-20" target="_blank">GitHub</a>
+    </div>
 
     <nav>
         <a href="#intro">서비스 소개</a>
@@ -288,6 +369,10 @@
                 }
             });
         });
+
+        function toggleMenu() {
+            document.getElementById('mobileMenu').classList.toggle('show');
+        }
     </script>
 
     <footer>
