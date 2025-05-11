@@ -1,8 +1,5 @@
-from typing import Any
-from django.shortcuts import render
-
-import logging
 import requests
+import json
 from django.http import JsonResponse
 from django.core.cache import cache
 from django.db import transaction
@@ -17,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
-from .models import *
+from .models import Appearance, DrugInfo
 from .serializers import *
 
 class SaveDrugDataView(APIView):
@@ -52,6 +49,7 @@ class SaveDrugDataView(APIView):
                 is_last_page = True  # 더 이상 데이터가 없으면 종료
                 break
 
+            # DB에 업데이트(리턴값: 업데이트 된 의약품 수)
             saved_count = self.update_data_to_db(items)
             total_saved_count += saved_count
 
@@ -100,46 +98,24 @@ class SaveDrugDataView(APIView):
         drugs_to_create = []
 
         for data in data_list:
-            try:
-                # DrugInfo 객체 생성
-                drug = DrugInfo(
-                    item_seq=data.get("ITEM_SEQ"),
-                    item_name=data.get("ITEM_NAME"),
-                    entp_name=data.get("ENTP_NAME"),
-                    consgn_manuf=data.get("CONSGN_MANUF"),
-                    etc_otc_code=data.get("ETC_OTC_CODE"),
-                    chart=data.get("CHART"),
-                    bar_code=data.get("BAR_CODE"),
-                    material_name=data.get("MATERIAL_NAME"),
-                    ee_doc_id=data.get("EE_DOC_ID"),
-                    ud_doc_id=data.get("UD_DOC_ID"),
-                    nb_doc_id=data.get("NB_DOC_ID"),
-                    storage_method=data.get("STORAGE_METHOD"),
-                    valid_term=data.get("VALID_TERM"),
-                    pack_unit=data.get("PACK_UNIT"),
-                    ee_doc_data=data.get("EE_DOC_DATA"),
-                    ud_doc_data=data.get("UD_DOC_DATA"),
-                    nb_doc_data=data.get("NB_DOC_DATA"),
-                )
-                drugs_to_create.append(drug)
+            serializer = DrugInfoSerializer(data=data)
+            if serializer.is_valid():
+                drugs_to_create.append(DrugInfo(**serializer.validated_data))
+                seq_list.append(serializer.validated_data["item_seq"])
+            else:
+                print(f"Data validation error: {serializer.errors}")
 
-                seq_list.append(data.get("ITEM_SEQ"))
-
-            except Exception as ex:
-                print(f"데이터 생성 중 오류 발생: {ex}")
-                continue
         # 배치 저장
         if drugs_to_create:
             try:
                 DrugInfo.objects.bulk_create(drugs_to_create, ignore_conflicts=True)
-                saved_count += len(drugs_to_create)
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
         # 불필요 데이터 삭제
         self.delete_db_data(seq_list)
 
-        return saved_count
+        return len(drugs_to_create)
 
     def delete_db_data(self, seq_list):
         """
@@ -206,7 +182,6 @@ class SaveAppearanceDataView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
     def fetch_page_data(self, page_no, num_of_rows):
         """
         공공 API로부터 약 외형 데이터를 가져옵니다.
@@ -236,49 +211,28 @@ class SaveAppearanceDataView(APIView):
         :return: 저장된 데이터 개수
         """
         saved_count = 0
-        seq_list = []
+        seq_list = []  # seq만 따로 저장
         appearances_to_create = []
 
         for data in data_list:
-            try:
-                # Appearance 객체 만들기
-                appearance = Appearance(
-                    item_seq=data.get("ITEM_SEQ"),
-                    item_name=data.get("ITEM_NAME"),
-                    item_image=data.get("ITEM_IMAGE"),
-                    drug_shape=data.get("DRUG_SHAPE"),
-                    print_front=data.get("PRINT_FRONT"),
-                    print_back=data.get("PRINT_BACK"),
-                    color_class1=data.get("COLOR_CLASS1"),
-                    color_class2=data.get("COLOR_CLASS2"),
-                    line_front=data.get("LINE_FRONT"),
-                    line_back=data.get("LINE_BACK"),
-                    leng_long=data.get("LENG_LONG"),
-                    leng_short=data.get("LENG_SHORT"),
-                    thick=data.get("THICK"),
-                    img_regist_ts=data.get("IMG_REGIST_TS"),
-                    item_permit_date=data.get("ITEM_PERMIT_DATE"),
-                )
-                appearances_to_create.append(appearance)
-
-                seq_list.append(data.get("ITEM_SEQ"))
-
-            except Exception as ex:
-                print(f"데이터 생성 중 오류 발생: {ex}")
-                continue
+            serializer = AppearanceSerializer(data=data)
+            if serializer.is_valid():
+                appearances_to_create.append(Appearance(**serializer.validated_data))
+                seq_list.append(serializer.validated_data["item_seq"])
+            else:
+                print(f"Data validation error: {serializer.errors}")
 
         # 배치로 저장
         if appearances_to_create:
             try:
                 Appearance.objects.bulk_create(appearances_to_create, ignore_conflicts=True)
-                saved_count += len(appearances_to_create)
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
         # 불필요 데이터 삭제
         self.delete_db_data(seq_list)
 
-        return saved_count
+        return len(appearances_to_create)
 
     def delete_db_data(self, seq_list):
         """
@@ -345,83 +299,114 @@ class DrugSearchByNameView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
 class SearchDrugByAppearanceView(APIView):
-    def get(self, request):
+    def post(self, request):
         """
         약물 외형을 기반으로 약물을 검색하고 의약품 정보를 반환하는 API
         """
         try:
-            # 외형 관련 요청된 쿼리 파라미터 추출
-            valid_fields = [
-                "color_class1", "color_class2", "line_front", "line_back", "drug_shape ",
-                "print_front", "print_back", "leng_long", "leng_short", "thick", "mark_code_front_anal",
-                "mark_code_back_anal", "mark_code_front_img", "mark_code_back_img", "mark_code_front",
-                "mark_code_back"
-            ]
-            filters = {
-                f"{field}__icontains": request.query_params.get(field)
-                for field in valid_fields if request.query_params.get(field)
-            }
+            data = request.data
+            query = Q()
 
-            # Appearance 모델 필터링
-            appearances = Appearance.objects.filter(**filters)
+            # 모양(shape) 필터 추가
+            if "shape" in data and data["shape"]:
+                shape_query = Q()
+                for shape in data["shape"]:
+                    shape_query |= Q(drug_shape__icontains=shape)
+                query &= shape_query
+
+            # 색상(color) 필터 추가
+            if "color" in data and data["color"]:
+                color_query = Q()
+                for color in data["color"]:
+                    color_query |= Q(color_class1__icontains=color) | Q(color_class2__icontains=color)
+                query &= color_query
+
+            # 분할선(line) 필터 추가
+            if "line" in data and data["line"]:
+                line_query = Q()
+                for line in data["line"]:
+                    line_query |= Q(line_front__icontains=line) | Q(line_back__icontains=line)
+                query &= line_query
+
+            # 제형(form) 필터 추가 - chart 필드 사용으로 수정
+            if "form" in data and data["form"]:
+                form_query = Q()
+                for form in data["form"]:
+                    form_query |= Q(chart__icontains=form)
+                query &= form_query
+
+            # 식별문자(text) 필터 추가
+            if "text" in data and data["text"]:
+                text_query = Q()
+                for text in data["text"]:
+                    text_query |= Q(print_front__icontains=text) | Q(print_back__icontains=text) | \
+                                  Q(mark_code_front__icontains=text) | Q(mark_code_back__icontains=text) | \
+                                  Q(mark_code_front_anal__icontains=text) | Q(mark_code_back_anal__icontains=text)
+                query &= text_query
+
+            # Appearance 모델 필터링 (최소한 하나의 필터가 있을 때만)
+            if query != Q():
+                appearances = Appearance.objects.filter(query)
+            else:
+                return Response({
+                    "status": "error",
+                    "message": "최소한 하나의 검색 조건이 필요합니다."
+                }, status=status.HTTP_400_BAD_REQUEST)
 
             # Appearance 검색 결과가 있는 경우 DrugInfo에서 추가 정보 조회
             if appearances.exists():
                 item_seqs = appearances.values_list("item_seq", flat=True)  # 검색된 item_seq 리스트
                 drug_infos = DrugInfo.objects.filter(item_seq__in=item_seqs)  # DrugInfo 조회
+                drug_info_serialized = DrugInfoSerializer(drug_infos, many=True).data
 
-                # Appearance와 DrugInfo 데이터 조합
-                data = []
+                result_data = []
                 for appearance in appearances:
-                    drug_info = drug_infos.filter(item_seq=appearance.item_seq).first()  # 각각의 의약품 정보
-                    data.append({
-                        "item_seq": appearance.item_seq,
+                    matched_drug_info = next(
+                        (info for info in drug_info_serialized if info['item_seq'] == appearance.item_seq),
+                        None
+                    )
+                    result_data.append({
+                        "drug_info": matched_drug_info,
                         "appearance": {
-                            "item_name": appearance.item_name,
                             "image": appearance.item_image,
                         },
-                        "drug_info": {
-                            "item_name": drug_info.item_name if drug_info else None,
-                            "entp_name": drug_info.entp_name if drug_info else None,
-                            "chart": drug_info.chart if drug_info else None,
-                            "material_name": drug_info.material_name if drug_info else None,
-                            "storage_method": drug_info.storage_method if drug_info else None,
-                            "valid_term": drug_info.valid_term if drug_info else None,
-                            "ee_doc_data": drug_info.ee_doc_data if drug_info else None,
-                            "ud_doc_data": drug_info.ud_doc_data if drug_info else None,
-                            "nb_doc_data": drug_info.nb_doc_data if drug_info else None,
-                        } if drug_info else None
                     })
 
-                return JsonResponse({"status": "success", "data": data}, status=200)
-
+                return Response({
+                    "status": "success",
+                    "count": len(result_data),
+                    "data": result_data
+                }, status=status.HTTP_200_OK)
             else:
-                return JsonResponse({"status": "success", "data": [], "message": "No matching drugs found."},
-                                    status=200)
+                return Response({
+                    "status": "success",
+                    "count": 0,
+                    "data": [],
+                    "message": "검색 결과가 없습니다."
+                }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+            return Response({
+                "status": "error",
+                "message": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class AppearanceDetailView(APIView):
+class AppearanceDetailView(ListAPIView):
     """
-    특정 약물의 외형 정보를 반환하는 뷰 (item_seq를 기준으로 조회)
+    특정 약물의 외형 정보를 반환하는 뷰 
     """
-    def get(self, request, item_seq):
-        try:
-            appearance = get_object_or_404(Appearance, item_seq=item_seq)  # 외형 데이터를 item_seq로 검색
-            serializer = AppearanceSerializer(appearance)  # 직렬화
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as ex:
-            return Response(
-                {"error": f"외형 데이터를 가져오는 중 오류가 발생했습니다: {ex}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+    queryset = Appearance.objects.all()
+    serializer_class = AppearanceSerializer
+    filter_backends = [SearchFilter]  # 검색 기능 추가
+    search_fields = ['item_seq', 'item_name', 'entp_name']  # 검색 가능한 필드 정의
 
 class CheckInteractionsView(View):
+    """
+    의약품 리스트를 받아서 병용금기를 확인하는 뷰
+    """
     def post(self, request, *args, **kwargs):
-        import json
-
         try:
             # 요청 데이터 파싱
             body = json.loads(request.body)

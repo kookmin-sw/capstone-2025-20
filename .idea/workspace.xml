@@ -7,6 +7,7 @@
     <list default="true" id="36c4cf63-7bd2-493b-ad54-2d6fd0361046" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/myapi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/myapi/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pill/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/views.py" afterDir="false" />
     </list>
@@ -146,7 +147,10 @@
       <workItem from="1745471101551" duration="1925000" />
       <workItem from="1745928020646" duration="12425000" />
       <workItem from="1745983551395" duration="343000" />
-      <workItem from="1745984316222" duration="2398000" />
+      <workItem from="1745984316222" duration="6401000" />
+      <workItem from="1746002332587" duration="14716000" />
+      <workItem from="1746545169602" duration="18625000" />
+      <workItem from="1746630396735" duration="3194000" />
     </task>
     <servers />
   </component>
