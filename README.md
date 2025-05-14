@@ -133,10 +133,10 @@ pip install django-cors-headers
 
 ## 팀원 소개
 
-| 이름 | 역할 | GitHub / 연락처 |
-|------|------|------------------|
-| 김민철 | 팀장 / 프론트엔드 | [GitHub](https://github.com/Armont52) |
-| 조원혁 | 백엔드 | [GitHub](https://github.com/5starss) |
+| 이름 | 학번 | 역할 | GitHub / 연락처 |
+|------|----------|------|------------------|
+| 김민철 | 20180485 | 팀장 / 프론트엔드 | [GitHub](https://github.com/Armont52) |
+| 조원혁 | 20180519 | 백엔드 | [GitHub](https://github.com/5starss) |
 
 ---
 
