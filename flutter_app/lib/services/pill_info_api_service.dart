@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:xml2json/xml2json.dart';
 import '../model/pill.dart';
+import '../model/interaction_result.dart';
 import '../settings.dart';
 
 class PillInfoApiService {
@@ -87,7 +88,8 @@ class PillInfoApiService {
   // 제품명으로 검색 - 우리 서버에서 검색
   static Future<List<Pill>> fetchPillsByName(String name) async {
     final encodedName = Uri.encodeComponent(name);
-    final url = Uri.parse('${ApiConstants.drugNameSearchUrl}?search=$encodedName');
+    final url = Uri.parse(
+        '${ApiConstants.drugNameSearchUrl}?search=$encodedName');
 
     try {
       final response = await http.get(url);
@@ -108,8 +110,9 @@ class PillInfoApiService {
   }
 
   // 병용 금기 검사
-  static Future<bool?> checkInteractions(List<int> itemSeqList) async {
-    final url = Uri.parse('${ApiConstants.checkInteractionUrl}');
+  static Future<InteractionResult?> checkInteractions(
+      List<int> itemSeqList) async {
+    final url = Uri.parse(ApiConstants.checkInteractionUrl);
     final body = jsonEncode({'itemSeqList': itemSeqList});
 
     try {
@@ -121,7 +124,7 @@ class PillInfoApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
-        return data['result'] as bool?;
+        return InteractionResult.fromJson(data);
       } else {
         print('병용 금기 요청 실패: ${response.statusCode}');
         return null;

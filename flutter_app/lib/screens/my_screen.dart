@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../model/pill.dart';
 import '../model/my_pills.dart';
+import '../model/interaction_result.dart';
 import '../services/pill_info_api_service.dart';
 import '../utils/pill_storage.dart';
 
@@ -14,6 +15,7 @@ class MyScreen extends StatefulWidget {
 class _MyScreenState extends State<MyScreen> {
   List<Pill> pills = [];
   bool isLoading = true;
+  InteractionResult? interactionResult;
 
   @override
   void initState() {
@@ -22,14 +24,20 @@ class _MyScreenState extends State<MyScreen> {
   }
 
   Future<void> loadMyPills() async {
-    await Future.delayed(const Duration(seconds: 1)); // 로딩 효과용
+    await Future.delayed(const Duration(seconds: 1));
 
     final codes = await PillStorage.load();
     final futures = codes.map(PillInfoApiService.fetchPillByCode);
     final results = await Future.wait(futures);
+    final validPills = results.whereType<Pill>().toList();
+
+    final interaction = await PillInfoApiService.checkInteractions(
+      validPills.map((e) => e.itemSeq).toList(),
+    );
 
     setState(() {
-      pills = results.whereType<Pill>().toList(); // null 제거
+      pills = validPills;
+      interactionResult = interaction;
       isLoading = false;
     });
   }
@@ -50,12 +58,38 @@ class _MyScreenState extends State<MyScreen> {
           : Column(
         children: [
           const SizedBox(height: 16),
-          buildStatusBox(isSafe: true),
+          buildStatusBox(isSafe: interactionResult?.isSafe ?? true),
           const SizedBox(height: 8),
-          const Text(
-            '해당 제품들은 함께 복용해도 안전합니다.',
-            style: TextStyle(fontSize: 14),
+          Text(
+            interactionResult?.isSafe ?? true
+                ? '해당 제품들은 함께 복용해도 안전합니다.'
+                : '일부 약물은 함께 복용하면 위험합니다.',
+            style: const TextStyle(fontSize: 14),
           ),
+          if (!(interactionResult?.isSafe ?? true))
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Builder(
+                builder: (context) {
+                  // Map<itemSeq as String, itemName>
+                  final pillMap = {
+                    for (var pill in pills) pill.itemSeq.toString(): pill.itemName
+                  };
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: interactionResult!.conflicts.map((conflict) {
+                      final drugAName = pillMap[conflict.drugA] ?? conflict.drugA;
+                      final drugBName = pillMap[conflict.drugB] ?? conflict.drugB;
+
+                      return Text('$drugAName와(과) $drugBName은(는) 함께 복용할 수 없습니다.\n${conflict.reason}',
+                        style: const TextStyle(fontWeight: FontWeight.bold,),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
           const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
