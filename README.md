@@ -53,11 +53,14 @@
 </p>
 
 ### 제품명으로 약 검색
+의약품의 정확한 제품명을 알고 있다면, 제품명을 통해 검색할 수 있습니다.
 <p>
   <img src="docs/screenshots/name_search.png" alt="제품명 검색 화면" width="150"/>
 </p>
 
 ### 외형 정보 기반 검색
+제품명을 모르더라도 알약의 형태, 색상, 제형, 분할선, 식별 문자를 통해 검색할 수 있습니다.
+검색 결과 중 일치하는 의약품을 나의 복용약에 추가합니다.
 <p>
   <img src="docs/screenshots/feature_search_1.png" alt="생김새 검색 화면" width="150"/>
   <img src="docs/screenshots/feature_search_2.png" alt="생김새 검색 화면" width="150"/>
@@ -68,12 +71,17 @@
 </p>
 
 ### 카메라 기반 검색
+카메라 인식을 통해 외형 정보 입력을 대신할 수 있습니다.
+검색 결과 중 일치하는 의약품을 나의 복용약에 추가합니다.
 <p>
   <img src="docs/screenshots/camera_search.png" alt="카메라 검색 화면" width="150"/>
   <img src="docs/screenshots/search_result.png" alt="검색 결과 화면" width="150"/>
 </p>
 
 ### 나의 복용약 관리
+나의 복용약들을 함께 복용해도 되는 지 확인할 수 있습니다.
+함께 복용할 수 없는 경우에는 그 이유와 함께 경고가 나타납니다.
+또한, 각 의약품의 효능, 용법, 주의사항 등 상세 정보를 확인할 수 있습니다.
 <p>
   <img src="docs/screenshots/my_screen.png" alt="제품명 검색 화면" width="150"/>
   <img src="docs/screenshots/my_screen_detail.png" alt="제품명 검색 화면" width="150"/>
