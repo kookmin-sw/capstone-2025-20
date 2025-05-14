@@ -2,24 +2,16 @@ from django.db import models
 
 # Create your models here.
 class DrugInfo(models.Model):
-    item_seq = models.CharField(max_length=20, primary_key=True)  # 의약품 고유번호
-    item_name = models.CharField(max_length=255)  # 의약품 이름
-    entp_name = models.CharField(max_length=255)  # 제조사명
-    consgn_manuf = models.CharField(max_length=255, null=True, blank=True)  # 위탁 제조사명
-    etc_otc_code = models.CharField(max_length=50)  # 전문/일반 의약품 구분
+    item_seq = models.CharField(max_length=9, primary_key=True)  # 의약품 고유번호
+    item_name = models.TextField(null=True, blank=True)  # 의약품 이름
+    entp_name = models.TextField(null=True, blank=True)  # 제조사명
     chart = models.TextField(null=True, blank=True)  # 의약품 형태
-    bar_code = models.TextField(null=True, blank=True)  # 바코드
     material_name = models.TextField(null=True, blank=True)  # 성분 정보
-    ee_doc_id = models.TextField(null=True, blank=True)  # 효능,효과
-    ud_doc_id = models.TextField(null=True, blank=True)  # 용법,용량
-    nb_doc_id = models.TextField(null=True, blank=True)  # 사용상의 주의사항
     storage_method = models.CharField(max_length=255, null=True, blank=True)  # 보관 방법
     valid_term = models.CharField(max_length=255, null=True, blank=True)  # 유효 기간
-    pack_unit = models.CharField(max_length=100, null=True, blank=True)  # 포장 단위
     ee_doc_data = models.TextField(null=True, blank=True)  # 효능,효과
     ud_doc_data = models.TextField(null=True, blank=True)  # 용법,용량
     nb_doc_data = models.TextField(null=True, blank=True)  # 사용상의 주의사항
-    created_at = models.DateTimeField(auto_now_add=True)  # 데이터 저장 시간
 
     def __str__(self):
         return self.item_name
@@ -28,9 +20,9 @@ class DrugInfo(models.Model):
         ordering = ['item_seq']  # 기본 정렬
 
 class Appearance(models.Model):
-    item_seq = models.CharField(max_length=20, primary_key=True)  # 의약품 고유번호
-    item_name = models.CharField(max_length=255)  # 의약품 이름
-    entp_name = models.CharField(max_length=255)
+    item_seq = models.CharField(max_length=9, primary_key=True)    # 의약품 고유번호
+    item_name = models.TextField(null=True, blank=True)  # 의약품 이름
+    entp_name =models.TextField(null=True, blank=True)
     chart = models.CharField(max_length=255, null=True, blank=True)
     item_image = models.URLField(null=True, blank=True)
     print_front = models.CharField(max_length=100, null=True, blank=True)

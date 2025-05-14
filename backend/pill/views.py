@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import status
-from .models import Appearance, DrugInfo
+from .models import *
 from .serializers import *
 
 class SaveDrugDataView(APIView):
@@ -32,6 +32,7 @@ class SaveDrugDataView(APIView):
         page_no = 1
         num_of_rows = 100  # 한 페이지에서 가져올 데이터 수
         is_last_page = False  # 마지막 페이지 여부 확인
+        all_item_seqs = []
 
         while not is_last_page:
             # 1. 페이지 데이터를 가져옴
@@ -50,17 +51,19 @@ class SaveDrugDataView(APIView):
                 break
 
             # DB에 업데이트(리턴값: 업데이트 된 의약품 수)
-            saved_count = self.update_data_to_db(items)
-            total_saved_count += saved_count
-
+            page_seq_list = self.update_data_to_db(items)
+            all_item_seqs.extend(page_seq_list)  # 전체 API seq 수집
+            total_saved_count += len(page_seq_list)
             total_count = response_data.get("body", {}).get("totalCount", 0)
             if page_no * num_of_rows >= total_count:
                 is_last_page = True  # 모든 페이지 처리 완료
             else:
                 page_no += 1  # 다음 페이지로 이동
 
+        deleted_count = self.delete_db_data(all_item_seqs)
+
         return Response(
-            {"message": f"총 {total_saved_count}개의 데이터가 저장되었습니다."},
+            {"message": f"총 {total_saved_count}개의 데이터가 저장되었고, {deleted_count}개의 불필요한 데이터가 삭제되었습니다."},
             status=status.HTTP_200_OK,
         )
 
@@ -93,52 +96,68 @@ class SaveDrugDataView(APIView):
         :param data_list: API에서 가져온 데이터의 리스트
         :return: 저장된 데이터 개수
         """
-        saved_count = 0
-        seq_list = [] # seq만 따로 저장
-        drugs_to_create = []
+        seq_list = []  # seq만 따로 저장
+        drugs_to_create = []  # 벌크
 
+        # 데이터 검증 및 객체 생성
         for data in data_list:
-            serializer = DrugInfoSerializer(data=data)
+            # API 데이터의 키를 소문자로 변환
+            lowercase_data = {k.lower(): v for k, v in data.items()}
+            seq_list.extend([lowercase_data.get("item_seq")])
+            serializer = DrugInfoSerializer(data=lowercase_data)
             if serializer.is_valid():
-                drugs_to_create.append(DrugInfo(**serializer.validated_data))
+                # 객체 생성만 하고 저장은 하지 않음
+                drug = DrugInfo(**serializer.validated_data)
+                drugs_to_create.append(drug)
                 seq_list.append(serializer.validated_data["item_seq"])
-            else:
-                print(f"Data validation error: {serializer.errors}")
+            # else:
+            #     print(f"Data validation error: {serializer.errors}")
 
-        # 배치 저장
+        # 벌크 저장
         if drugs_to_create:
             try:
                 DrugInfo.objects.bulk_create(drugs_to_create, ignore_conflicts=True)
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
-        # 불필요 데이터 삭제
-        self.delete_db_data(seq_list)
-
-        return len(drugs_to_create)
+        print(f"총 저장된 갯수: {drugs_to_create}")
+        return seq_list
 
     def delete_db_data(self, seq_list):
         """
            API에서 가져온 데이터를 기준으로 DB에 저장된 남은 데이터를 삭제
            :param seq_list: API에서 가져온 데이터 SEQ 리스트
            """
-        # DB에 저장된 모든 데이터의 SEQ 조회
-        existing_data = set(DrugInfo.objects.values_list("item_seq", flat=True))
+        if not seq_list:
+            print("API에서 수신한 seq_list가 비어 있어 삭제 작업이 중단되었습니다.")
+            return 0
 
-        # 삭제 대상 계산
-        delete_data = existing_data - set(seq_list)
+        db_seq_set = set(DrugInfo.objects.values_list('item_seq', flat=True))
+        seq_set = set(map(str, seq_list))
+        db_seq_set = set(map(str, db_seq_set))
+        # 삭제 대상 (db_seq_set에 있는데 seq_list에는 없는 경우)
+        items_to_delete = list(db_seq_set - seq_set)
 
-        # 삭제 실행
-        if delete_data:
-            DrugInfo.objects.filter(item_seq__in=delete_data).delete()
-            print(f"총 {len(delete_data)}개의 데이터를 삭제했습니다.")
+        if not items_to_delete:
+            # 삭제할 데이터가 없는 경우
+            print("삭제할 데이터가 없습니다.")
+            return 0
 
+        # 배치 크기 설정
+        batch_size = 500  # 한 번에 처리할 개수
+
+        deleted_count = 0
+        for i in range(0, len(items_to_delete), batch_size):
+            batch = items_to_delete[i:i + batch_size]
+            with transaction.atomic():
+                deleted_count += DrugInfo.objects.filter(item_seq__in=batch).delete()[0]
+
+        return deleted_count
 
 class SaveAppearanceDataView(APIView):
     """
     공공 API로부터 약의 외형 데이터를 가져와 `Appearance` 모델에 저장하는 뷰
     """
-
     API_URL = "http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01"
     API_KEY =
 
@@ -146,14 +165,13 @@ class SaveAppearanceDataView(APIView):
         """
         GET: 외형 데이터를 저장하거나 업데이트
         """
-        #공공 API 데이터 Fetch
         total_saved_count = 0
         page_no = 1
         num_of_rows = 100  # 한 페이지에서 가져올 데이터 수
         is_last_page = False  # 마지막 페이지 여부 확인
+        all_item_seqs = []
 
         while not is_last_page:
-            # 1. 페이지 데이터를 가져옴
             response_data = self.fetch_page_data(page_no, num_of_rows)
             if response_data is None:
                 return Response(
@@ -161,24 +179,26 @@ class SaveAppearanceDataView(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            # 2. 해당 페이지 데이터 저장
             items = response_data.get("body", {}).get("items", [])
+            print(f"Info List (Page {page_no}): {len(items)}개")
             if not items:
                 is_last_page = True  # 더 이상 데이터가 없으면 종료
                 break
 
-            saved_count = self.update_appearance_data_to_db(items)
-            total_saved_count += saved_count
-
-            # 3. 총 데이터 카운트를 확인하고 페이지를 넘김
+            page_seq_list = self.update_appearance_data_to_db(items)
+            all_item_seqs.extend(page_seq_list)
+            total_saved_count += len(page_seq_list)
             total_count = response_data.get("body", {}).get("totalCount", 0)
             if page_no * num_of_rows >= total_count:
                 is_last_page = True  # 모든 페이지 처리 완료
             else:
                 page_no += 1  # 다음 페이지로 이동
 
+        # 불필요 데이터 삭제
+        deleted_count = self.delete_db_data(all_item_seqs)
+
         return Response(
-            {"message": f"총 {total_saved_count}개의 데이터가 저장되었습니다."},
+            {"message": f"총 {total_saved_count}개의 데이터가 저장되었고, {deleted_count}개의 불필요한 데이터가 삭제되었습니다."},
             status=status.HTTP_200_OK,
         )
 
@@ -210,17 +230,17 @@ class SaveAppearanceDataView(APIView):
         :param data_list: API에서 가져온 외형 데이터 리스트
         :return: 저장된 데이터 개수
         """
-        saved_count = 0
         seq_list = []  # seq만 따로 저장
         appearances_to_create = []
 
         for data in data_list:
-            serializer = AppearanceSerializer(data=data)
+            lowercase_data = {k.lower(): v for k, v in data.items()}
+            seq_list.extend([lowercase_data.get("item_seq")])
+            serializer = AppearanceSerializer(data=lowercase_data)
             if serializer.is_valid():
                 appearances_to_create.append(Appearance(**serializer.validated_data))
-                seq_list.append(serializer.validated_data["item_seq"])
-            else:
-                print(f"Data validation error: {serializer.errors}")
+            # else:
+            #     print(f"Data validation error: {serializer.errors}")
 
         # 배치로 저장
         if appearances_to_create:
@@ -229,26 +249,40 @@ class SaveAppearanceDataView(APIView):
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
-        # 불필요 데이터 삭제
-        self.delete_db_data(seq_list)
+        print(f"총 저장된 갯수: {len(appearances_to_create)}")
 
-        return len(appearances_to_create)
+        return seq_list
 
     def delete_db_data(self, seq_list):
         """
             API에서 가져온 데이터를 기준으로 DB에 저장된 남은 데이터를 삭제
             :param seq_list: API에서 가져온 데이터 리스트
             """
-        # DB에 저장된 모든 데이터의 SEQ 조회
-        existing_data_ids = set(Appearance.objects.values_list("item_seq", flat=True))
+        if not seq_list:
+            print("API에서 수신한 seq_list가 비어 있어 삭제 작업이 중단되었습니다.")
+            return 0
 
-        # 삭제 대상 계산
-        delete_data = existing_data_ids - set(seq_list)
+        db_seq_set = set(Appearance.objects.values_list('item_seq', flat=True))
+        seq_set = set(map(str, seq_list))
+        db_seq_set = set(map(str, db_seq_set))
+        # 삭제 대상 (db_seq_set에 있는데 seq_list에는 없는 경우)
+        items_to_delete = list(db_seq_set - seq_set)
 
-        # 삭제 실행
-        if delete_data:
-            Appearance.objects.filter(item_seq__in=delete_data).delete()
-            print(f"총 {len(delete_data)}개의 데이터를 삭제했습니다.")
+        if not items_to_delete:
+            # 삭제할 데이터가 없는 경우
+            print("삭제할 데이터가 없습니다.")
+            return 0
+
+        # 배치 크기 설정
+        batch_size = 500  # 한 번에 처리할 개수
+
+        deleted_count = 0
+        for i in range(0, len(items_to_delete), batch_size):
+            batch = items_to_delete[i:i + batch_size]
+            with transaction.atomic():
+                deleted_count += Appearance.objects.filter(item_seq__in=batch).delete()[0]
+
+        return deleted_count
 
 class DrugListView(ListAPIView):
     """
@@ -298,7 +332,6 @@ class DrugSearchByNameView(APIView):
                 {"error": f"검색 중 오류가 발생했습니다: {ex}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 
 class SearchDrugByAppearanceView(APIView):
     def post(self, request):
