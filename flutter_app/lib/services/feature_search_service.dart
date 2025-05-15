@@ -20,17 +20,35 @@ class FeatureSearchService {
       if (identifiers != null && identifiers.isNotEmpty) 'identifiers': identifiers,
     };
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(body),
-    );
+    print('요청 바디: ${jsonEncode(body)}'); // 콘솔에 출력
 
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-      return List<Map<String, dynamic>>.from(json['items']);
-    } else {
-      throw Exception('서버 오류: ${response.statusCode}');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      print('응답 바디: ${response.body}'); // 콘솔에 출력
+
+      if (response.statusCode == 200) {
+        final decoded = utf8.decode(response.bodyBytes);
+        final json = jsonDecode(decoded);
+        final items = json['data'] as List<dynamic>?;
+
+        if (items == null || items.isEmpty) return [];
+
+        return items
+            .where((item) => item['drug_info'] != null)
+            .map((item) => Pill.fromJson(item['drug_info']))
+            .toList();
+      } else {
+        print('서버 오류: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      print('Error in FeatureSearchService: $e');
+      return [];
     }
   }
 }

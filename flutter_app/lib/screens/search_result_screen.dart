@@ -18,6 +18,12 @@ class SearchResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final pills = results.map((json) => Pill.fromJson(json)).toList();
 
+    // 디버깅용 출력
+    print('검색 결과 개수: ${pills.length}');
+    for (final pill in pills) {
+      print('약 이름: ${pill.itemName}, 코드: ${pill.itemSeq}');
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('검색 결과')),
       body: Padding(

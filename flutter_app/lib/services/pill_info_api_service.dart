@@ -36,24 +36,28 @@ class PillInfoApiService {
 
   static Future<List<Pill>> fetchPillsByName(String name) async {
     final encodedName = Uri.encodeComponent(name);
-    final url = Uri.parse(
-      '${ApiConstants.drugInfoUrl}?serviceKey=${ApiConstants.drugInfoKey}&itemName=$encodedName&pageNo=1&numOfRows=20&type=json',
-    );
+    final url = Uri.parse('${ApiConstants.drugNameSearchUrl}?search=$encodedName');
 
     try {
       final response = await http.get(url);
-      print('Request URL: $url');
-      print('Status code: ${response.statusCode}');
+
+      print('요청 URL: $url');
+      print('응답 상태 코드: ${response.statusCode}');
+      print('응답 바디: ${utf8.decode(response.bodyBytes)}');
 
       if (response.statusCode != 200) {
         print('Failed to load data');
         return [];
       }
 
-      print('Response body: ${response.body}');
-      final data = json.decode(response.body);
-      final items = data['body']['items'] as List<dynamic>?;
-      if (items == null) return [];
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      final items = data['results'] as List<dynamic>?;
+
+      if (items == null || items.isEmpty) return [];
+
+      for (var item in items) {
+        print('이미지 URL: ${item['item_image']}');
+      }
 
       return items.map((item) => Pill.fromJson(item)).toList();
     } catch (e) {

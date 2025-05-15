@@ -2,56 +2,47 @@ class Pill {
   final String entpName;
   final String itemName;
   final int itemSeq;
+  final String chart;
+  final String materialName;
   final String efcyQesitm;
   final String useMethodQesitm;
-  final String atpnWarnQesitm;
   final String atpnQesitm;
-  final String intrcQesitm;
-  final String seQesitm;
-  final String depositMethodQesitm;
-  final String openDe;
-  final String updateDe;
   final String itemImage;
+  final String validTerm;
 
   Pill({
     required this.entpName,
     required this.itemName,
     required this.itemSeq,
+    required this.chart,
+    required this.materialName,
     required this.efcyQesitm,
     required this.useMethodQesitm,
-    required this.atpnWarnQesitm,
     required this.atpnQesitm,
-    required this.intrcQesitm,
-    required this.seQesitm,
-    required this.depositMethodQesitm,
-    required this.openDe,
-    required this.updateDe,
     required this.itemImage,
+    required this.validTerm,
   });
 
   factory Pill.fromJson(Map<String, dynamic> json) {
     String clean(String? text) {
       if (text == null) return '';
       return text
-          .replaceAll('\\n', '\n')   // \n 줄바꿈 처리
-          .replaceAll('\\\\', '')    // 이중 백슬래시 제거
-          .replaceAll(RegExp(r'\\(?!n)'), ''); // 나머지 역슬래시 제거
+          .replaceAll('\\n', '\n')
+          .replaceAll('\\\\', '')
+          .replaceAll(RegExp(r'\\(?!n)'), '');
     }
 
     return Pill(
-      entpName: json['entpName'] ?? '',
-      itemName: json['itemName'] ?? '',
-      itemSeq: int.parse(json['itemSeq']),
-      efcyQesitm: clean(json['efcyQesitm']),
-      useMethodQesitm: clean(json['useMethodQesitm']),
-      atpnWarnQesitm: clean(json['atpnWarnQesitm']),
-      atpnQesitm: clean(json['atpnQesitm']),
-      intrcQesitm: clean(json['intrcQesitm']),
-      seQesitm: clean(json['seQesitm']),
-      depositMethodQesitm: clean(json['depositMethodQesitm']),
-      openDe: json['openDe'] ?? '',
-      updateDe: json['updateDe'] ?? '',
-      itemImage: json['itemImage'] ?? '',
+      entpName: json['entp_name'] ?? '',
+      itemName: json['item_name'] ?? '',
+      itemSeq: int.tryParse(json['item_seq'] ?? '') ?? 0,
+      chart: clean(json['chart']),
+      materialName: clean(json['material_name']),
+      efcyQesitm: clean(json['ee_doc_data']),
+      useMethodQesitm: clean(json['ud_doc_data']),
+      atpnQesitm: clean(json['nb_doc_data']),
+      itemImage: json['item_image'] ?? '',
+      validTerm: json['valid_term'] ?? '',
     );
   }
 }
