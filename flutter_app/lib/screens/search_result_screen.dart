@@ -3,7 +3,7 @@ import '../model/pill.dart';
 import '../widgets/search_result_list.dart';
 
 class SearchResultScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> results;
+  final List<Pill> results;
 
   const SearchResultScreen({
     Key? key,
@@ -16,7 +16,7 @@ class SearchResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pills = results.map((json) => Pill.fromJson(json)).toList();
+    final pills = results;
 
     // 디버깅용 출력
     print('검색 결과 개수: ${pills.length}');

@@ -59,11 +59,11 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
       // 검색 실행
       try {
         final results = await FeatureSearchService.searchByFeatures(
-          shapes: selectedShapeList,
-          colors: selectedColors,
-          forms: selectedFormList,
-          lines: selectedFormList.contains('정제') ? selectedLineList : [],
-          identifiers: [frontIdentifier, backIdentifier]
+          shape: selectedShapeList,
+          color: selectedColors,
+          form: selectedFormList,
+          line: selectedFormList.contains('정제') ? selectedLineList : [],
+          text: [frontIdentifier, backIdentifier]
               .where((e) => e.trim().isNotEmpty)
               .toList(),
         );

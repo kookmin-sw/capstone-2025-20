@@ -1,23 +1,24 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../settings.dart';
+import '../model/pill.dart';
 
 class FeatureSearchService {
-  static Future<List<Map<String, dynamic>>> searchByFeatures({
-    required List<String> shapes,
-    required List<String> colors,
-    required List<String> forms,
-    List<String>? lines,
-    List<String>? identifiers,
+  static Future<List<Pill>> searchByFeatures({
+    required List<String> shape,
+    required List<String> color,
+    required List<String> form,
+    List<String>? line,
+    List<String>? text,
   }) async {
     final url = Uri.parse(ApiConstants.featureSearchUrl);
 
     final body = {
-      'shapes': shapes,
-      'colors': colors,
-      'forms': forms,
-      if (lines != null && lines.isNotEmpty) 'lines': lines,
-      if (identifiers != null && identifiers.isNotEmpty) 'identifiers': identifiers,
+      'shape': shape,
+      'color': color,
+      'form': form,
+      if (line != null && line.isNotEmpty) 'line': line,
+      if (text != null && text.isNotEmpty) 'text': text,
     };
 
     print('요청 바디: ${jsonEncode(body)}'); // 콘솔에 출력
