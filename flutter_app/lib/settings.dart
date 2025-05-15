@@ -1,5 +1,12 @@
 class ApiConstants {
-  static const String drugInfoUrl = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
-  static const String drugInfoKey = '-'; // 업로드 시 삭제 요망!!!
-  static const String featureSearchUrl = '서버 주소';
+  // static const String drugInfoUrl = 'http://apis.data.go.kr/1471000/DrbEasyDrugInfoService/getDrbEasyDrugList';
+  // static const String drugInfoKey = '-'; // 업로드 시 삭제 요망!!!
+
+  static const String baseUrl = 'http://3.34.208.34:8000'; // 서버 URL 입력
+
+  static const String featureSearchUrl = '$baseUrl/api/drug/appearance/search/';
+  static const String cameraSearchUrl = '$baseUrl/'; // 추후 수정 필요
+  static const String drugNameSearchUrl = '$baseUrl/api/drug/';
+  static const String drugSeqSearchUrl = '$baseUrl/api/drug/';
+  static const String checkInteractionUrl = '$baseUrl/api/checkInteractions/';
 }
