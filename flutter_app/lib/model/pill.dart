@@ -1,57 +1,62 @@
+import 'package:html/parser.dart' show parse;
+import 'package:xml/xml.dart';
+
 class Pill {
-  final String entpName;
+  final String itemSeq;
   final String itemName;
-  final int itemSeq;
-  final String efcyQesitm;
-  final String useMethodQesitm;
-  final String atpnWarnQesitm;
-  final String atpnQesitm;
-  final String intrcQesitm;
-  final String seQesitm;
-  final String depositMethodQesitm;
-  final String openDe;
-  final String updateDe;
+  final String entpName;
+  final String chart;
+  final String materialName;
+  final String storageMethod;
+  final String validTerm;
+  final String eeDocData;
+  final String udDocData;
+  final String nbDocData;
   final String itemImage;
 
   Pill({
-    required this.entpName,
-    required this.itemName,
     required this.itemSeq,
-    required this.efcyQesitm,
-    required this.useMethodQesitm,
-    required this.atpnWarnQesitm,
-    required this.atpnQesitm,
-    required this.intrcQesitm,
-    required this.seQesitm,
-    required this.depositMethodQesitm,
-    required this.openDe,
-    required this.updateDe,
+    required this.itemName,
+    required this.entpName,
+    required this.chart,
+    required this.materialName,
+    required this.storageMethod,
+    required this.validTerm,
+    required this.eeDocData,
+    required this.udDocData,
+    required this.nbDocData,
     required this.itemImage,
   });
 
-  factory Pill.fromJson(Map<String, dynamic> json) {
-    String clean(String? text) {
-      if (text == null) return '';
-      return text
-          .replaceAll('\\n', '\n')   // \n 줄바꿈 처리
-          .replaceAll('\\\\', '')    // 이중 백슬래시 제거
-          .replaceAll(RegExp(r'\\(?!n)'), ''); // 나머지 역슬래시 제거
-    }
+  static String _sanitize(String? value) {
+    if (value == null) return '';
+    final cdataReg = RegExp(r'<!\[CDATA\[(.*?)\]\]>', dotAll: true);
+    final cdataMatches = cdataReg.firstMatch(value);
+    final rawText = cdataMatches != null ? cdataMatches.group(1) : value;
+    final document = parse(rawText);
+    return parse(document.body?.text ?? '').documentElement?.text?.trim() ?? '';
+  }
 
+  static String _extractParagraphs(String? xmlData) {
+    if (xmlData == null) return '';
+    final document = XmlDocument.parse(xmlData);
+    final paragraphs = document.findAllElements('PARAGRAPH');
+    return paragraphs.map((p) => p.innerText.trim()).join('\n');
+  }
+
+  factory Pill.fromJson(Map<String, dynamic> json) {
     return Pill(
-      entpName: json['entpName'] ?? '',
-      itemName: json['itemName'] ?? '',
-      itemSeq: int.parse(json['itemSeq']),
-      efcyQesitm: clean(json['efcyQesitm']),
-      useMethodQesitm: clean(json['useMethodQesitm']),
-      atpnWarnQesitm: clean(json['atpnWarnQesitm']),
-      atpnQesitm: clean(json['atpnQesitm']),
-      intrcQesitm: clean(json['intrcQesitm']),
-      seQesitm: clean(json['seQesitm']),
-      depositMethodQesitm: clean(json['depositMethodQesitm']),
-      openDe: json['openDe'] ?? '',
-      updateDe: json['updateDe'] ?? '',
-      itemImage: json['itemImage'] ?? '',
+      itemSeq: json['item_seq'] ?? '',
+      itemName: _sanitize(json['item_name']),
+      entpName: _sanitize(json['entp_name']),
+      chart: _sanitize(json['chart']),
+      materialName: _sanitize(json['material_name']),
+      storageMethod: _sanitize(json['storage_method']),
+      validTerm: _sanitize(json['valid_term']),
+      eeDocData: _extractParagraphs(json['ee_doc_data']),
+      udDocData: _extractParagraphs(json['ud_doc_data']),
+      nbDocData: _extractParagraphs(json['nb_doc_data']),
+      itemImage: json['item_image'] ?? '',
     );
   }
 }

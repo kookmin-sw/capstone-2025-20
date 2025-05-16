@@ -44,8 +44,10 @@ class PillInfoApiService {
       final response = await http.get(url);
       if (response.statusCode != 200) return null;
 
+      print(response);
+
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      final items = data['body']?['items'] as List?;
+      final items = data['results'] as List?;
       if (items == null || items.isEmpty) return null;
 
       return Pill.fromJson(items.first);
@@ -88,19 +90,26 @@ class PillInfoApiService {
   // 제품명으로 검색 - 우리 서버에서 검색
   static Future<List<Pill>> fetchPillsByName(String name) async {
     final encodedName = Uri.encodeComponent(name);
-    final url = Uri.parse(
-        '${ApiConstants.drugNameSearchUrl}?search=$encodedName');
+    final url = Uri.parse('${ApiConstants.drugNameSearchUrl}?search=$encodedName');
 
     try {
       final response = await http.get(url);
+
+      print('요청 URL: $url');
+      print('응답 상태 코드: ${response.statusCode}');
+      print('응답 바디: ${utf8.decode(response.bodyBytes)}');
+
       if (response.statusCode != 200) {
         print('Failed to load data');
         return [];
       }
 
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      final items = data['body']['items'] as List<dynamic>?;
-      if (items == null) return [];
+      final items = data['results'] as List<dynamic>?;
+
+      if (items == null || items.isEmpty) return [];
+
+      return items.map((item) => Pill.fromJson(item)).toList();
 
       return items.map((item) => Pill.fromJson(item)).toList();
     } catch (e) {
@@ -110,8 +119,7 @@ class PillInfoApiService {
   }
 
   // 병용 금기 검사
-  static Future<InteractionResult?> checkInteractions(
-      List<int> itemSeqList) async {
+  static Future<InteractionResult?> checkInteractions(List<int> itemSeqList) async {
     final url = Uri.parse(ApiConstants.checkInteractionUrl);
     final body = jsonEncode({'itemSeqList': itemSeqList});
 

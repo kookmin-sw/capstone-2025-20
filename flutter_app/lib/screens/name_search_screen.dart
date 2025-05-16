@@ -32,6 +32,7 @@ class _NameSearchScreenState extends State<NameSearchScreen> {
 
   Future<void> _addPill(int itemSeq) async {
     await PillStorage.addPill(itemSeq);
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('복용약에 추가되었습니다')),
     );
@@ -68,9 +69,11 @@ class _NameSearchScreenState extends State<NameSearchScreen> {
             if (_isLoading)
               const CircularProgressIndicator()
             else
-              SearchResultList(
-                pills: _searchResults,
-                onAdd: _addPill,
+              Expanded(
+                child: SearchResultList(
+                  pills: _searchResults,
+                  onAdd: _addPill,
+                ),
               ),
           ],
         ),

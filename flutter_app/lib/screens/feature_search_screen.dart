@@ -681,6 +681,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
 
   Widget _buildLineStep() {
     final lines = ['전체', '없음', '-형', '+형'];
+    final lineServerValueMap = {'-형': '-', '+형': '+'};
 
     final lineImageMap = {
       '-형': 'assets/line1.png',
@@ -711,7 +712,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
               final line = lines[index];
               final isSelected = line == '전체'
                   ? isAllLinesSelected()
-                  : selectedLineList.contains(line);
+                  : selectedLineList.contains(lineServerValueMap[line] ?? line);
 
               return GestureDetector(
                 onTap: () {
@@ -720,13 +721,13 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                       if (isAllLinesSelected()) {
                         selectedLineList.clear();
                       } else {
-                        selectedLineList = lines.where((e) => e != '전체').toList();
+                        selectedLineList = lines.where((e) => e != '전체').map((e) => lineServerValueMap[e] ?? e).toList();
                       }
                     } else {
-                      if (selectedLineList.contains(line)) {
-                        selectedLineList.remove(line);
+                      if (selectedLineList.contains(lineServerValueMap[line] ?? line)) {
+                        selectedLineList.remove(lineServerValueMap[line] ?? line);
                       } else {
-                        selectedLineList.add(line);
+                        selectedLineList.add(lineServerValueMap[line] ?? line);
                       }
                     }
                   });

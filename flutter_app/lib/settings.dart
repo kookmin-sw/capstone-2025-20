@@ -4,7 +4,7 @@ class ApiConstants {
 
   static const String baseUrl = 'http://3.34.208.34:8000'; // 서버 URL 입력
 
-  static const String featureSearchUrl = '$baseUrl/api/drug/appearance/search/';
+  static const String featureSearchUrl = '$baseUrl/api/drug/search/appearance/';
   static const String cameraSearchUrl = '$baseUrl/'; // 추후 수정 필요
   static const String drugNameSearchUrl = '$baseUrl/api/drug/';
   static const String drugSeqSearchUrl = '$baseUrl/api/drug/';
