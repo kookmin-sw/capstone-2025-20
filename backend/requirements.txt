@@ -11,3 +11,5 @@ sqlparse==0.5.3
 tzdata==2025.2
 urllib3==2.3.0
 wheel==0.41.2
+django-cors-headers
+

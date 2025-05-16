@@ -3,16 +3,19 @@ import json
 from django.http import JsonResponse
 from django.core.cache import cache
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from django.db.models import Prefetch
 from django.views import View
+from django.urls import resolve, reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
 from rest_framework.filters import SearchFilter
 from rest_framework.views import APIView
+from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.test import APIRequestFactory
 from rest_framework import status
 from .models import *
 from .serializers import *
@@ -26,7 +29,7 @@ class SaveDrugDataView(APIView):
 
     def post(self, request):
         """
-        GET 요청 시 공공 API에서 데이터 fetch
+        POST: 공공 API에서 의약품 데이터 저장하거나 업데이트
         """
         total_saved_count = 0
         page_no = 1
@@ -110,8 +113,6 @@ class SaveDrugDataView(APIView):
                 drug = DrugInfo(**serializer.validated_data)
                 drugs_to_create.append(drug)
                 seq_list.append(serializer.validated_data["item_seq"])
-            # else:
-            #     print(f"Data validation error: {serializer.errors}")
 
         # 벌크 저장
         if drugs_to_create:
@@ -163,7 +164,7 @@ class SaveAppearanceDataView(APIView):
 
     def post(self, request):
         """
-        GET: 외형 데이터를 저장하거나 업데이트
+        POST: 외형 데이터를 저장하거나 업데이트
         """
         total_saved_count = 0
         page_no = 1
@@ -239,8 +240,6 @@ class SaveAppearanceDataView(APIView):
             serializer = AppearanceSerializer(data=lowercase_data)
             if serializer.is_valid():
                 appearances_to_create.append(Appearance(**serializer.validated_data))
-            # else:
-            #     print(f"Data validation error: {serializer.errors}")
 
         # 배치로 저장
         if appearances_to_create:
@@ -292,46 +291,16 @@ class DrugListView(ListAPIView):
     serializer_class = DrugInfoSerializer
     filter_backends = [SearchFilter]  # 검색 기능 추가
     search_fields = ['item_seq', 'item_name', 'entp_name']  # 검색 가능한 필드 정의
+    def get_queryset(self):
+        # Appearance의 item_image를 참조하는 서브쿼리 작성
+        item_image_subquery = Appearance.objects.filter(
+            item_seq=OuterRef('item_seq')  # DrugInfo의 item_seq를 참조
+        ).values('item_image')[:1]  # 처음 나온 하나의 결과만 가져옴
 
-class DrugSearchByItemSeq(APIView):
-    """
-    특정 약물의 세부 정보를 반환하는 뷰 (item_seq를 기준으로 조회)
-    """
-    def get(self, request, item_seq):
-        try:
-            drug = get_object_or_404(DrugInfo, item_seq=item_seq)  # 아이템 일련번호로 약물 검색
-            serializer = DrugInfoSerializer(drug)  # 직렬화
-            return Response(serializer.data, status=status.HTTP_200_OK)  # 직렬화된 데이터 반환
-        except DrugInfo.DoesNotExist:
-            return Response({"error": "Drug not found"}, status=status.HTTP_404_NOT_FOUND)
-
-class DrugSearchByNameView(APIView):
-    """
-    약물 이름을 기준으로 데이터를 검색해 반환하는 뷰
-    """
-    def get(self, request):
-        try:
-            query = request.query_params.get("name", "")  # URL 파라미터로 검색어 가져오기
-            if not query:
-                return Response(
-                    {"error": "검색어를 입력해주세요."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            drugs = DrugInfo.objects.filter(item_name__icontains=query)  # 이름 기반 검색
-            if not drugs.exists():
-                return Response(
-                    {"message": "검색된 결과가 없습니다."},
-                    status=status.HTTP_404_NOT_FOUND
-                )
-
-            serializer = DrugInfoSerializer(drugs, many=True)  # 직렬화
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as ex:
-            return Response(
-                {"error": f"검색 중 오류가 발생했습니다: {ex}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # DrugInfo QuerySet에 item_image 서브쿼리를 주입
+        return DrugInfo.objects.annotate(
+            item_image=Subquery(item_image_subquery)
+        )
 
 class SearchDrugByAppearanceView(APIView):
     def post(self, request):
@@ -388,24 +357,17 @@ class SearchDrugByAppearanceView(APIView):
                     "message": "최소한 하나의 검색 조건이 필요합니다."
                 }, status=status.HTTP_400_BAD_REQUEST)
 
-            # Appearance 검색 결과가 있는 경우 DrugInfo에서 추가 정보 조회
+            # Appearance 검색 결과가 있는 경우 DrugListView 호출
             if appearances.exists():
                 item_seqs = appearances.values_list("item_seq", flat=True)  # 검색된 item_seq 리스트
-                drug_infos = DrugInfo.objects.filter(item_seq__in=item_seqs)  # DrugInfo 조회
-                drug_info_serialized = DrugInfoSerializer(drug_infos, many=True).data
+                drug_list_url = reverse("drug_list")
+                factory = APIRequestFactory()
+                http_request = factory.get(drug_list_url, {'item_seq__in': ','.join(map(str, item_seqs))})
+                # DrugListView 호출
+                resolved_view = resolve(drug_list_url)
+                drug_list_response = resolved_view.func(http_request)
 
-                result_data = []
-                for appearance in appearances:
-                    matched_drug_info = next(
-                        (info for info in drug_info_serialized if info['item_seq'] == appearance.item_seq),
-                        None
-                    )
-                    result_data.append({
-                        "drug_info": matched_drug_info,
-                        "appearance": {
-                            "image": appearance.item_image,
-                        },
-                    })
+                result_data = drug_list_response.data
 
                 return Response({
                     "status": "success",
@@ -435,6 +397,7 @@ class AppearanceDetailView(ListAPIView):
     filter_backends = [SearchFilter]  # 검색 기능 추가
     search_fields = ['item_seq', 'item_name', 'entp_name']  # 검색 가능한 필드 정의
 
+@method_decorator(csrf_exempt, name='dispatch')
 class CheckInteractionsView(View):
     """
     의약품 리스트를 받아서 병용금기를 확인하는 뷰
@@ -447,13 +410,12 @@ class CheckInteractionsView(View):
             if not item_seq_list or not isinstance(item_seq_list, list):
                 return JsonResponse({"error": "Invalid itemSeqList format"}, status=400)
 
-            # 병용 금기 검사 (임시 로직; 예: 특정 조건에 따라 임의로 false 설정)
-            # 이 부분은 실제 비즈니스 로직 및 데이터를 기반으로 구현
+            # 병용 금기 검사
             contraindications_view = CheckDrugContraindicationsView()
             is_safe = True
             conflicts = []
 
-            # 모든 약물 조합 비교 (O(N^2) 방식)
+            # 모든 약물 조합 비교
             for i in range(len(item_seq_list)-1):
                 for j in range(i + 1, len(item_seq_list)):
                     drug_a = item_seq_list[i]
@@ -461,7 +423,6 @@ class CheckInteractionsView(View):
 
                     # CheckDrugContraindicationsWithPaginationView의 금기 확인 메서드 호출
                     result = contraindications_view.check_contraindicated_with_pagination(drug_a, drug_b)
-
                     # 금기일 경우 conflicts 리스트에 추가
                     if result:
                         conflicts.append({
@@ -492,61 +453,19 @@ class CheckDrugContraindicationsView(APIView):
     API_URL = "http://apis.data.go.kr/1471000/DURPrdlstInfoService03/getUsjntTabooInfoList03"  # 병용 금기 조회 API의 URL
     API_KEY =
 
-    def get(self, request):
-        """
-        GET 요청: 약물 A를 기준으로 병용 금기 데이터를 페이지 단위로 검색하여 약물 B가 포함되는지 확인
-        """
-        try:
-            drug_a = request.query_params.get("drugA")  # 약물 A의 이름 또는 ID
-            drug_b = request.query_params.get("drugB")  # 약물 B의 이름 또는 ID
-            source = "API"
+    CACHE_TIMEOUT =  24 * 60 * 60
 
-            # 필수 파라미터 확인
-            if not drug_a or not drug_b:
-                return Response(
-                    {"error": "drugA(약물 A)와 drugB(약물 B) 정보를 모두 제공해야 합니다."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            # 캐시 키 생성 (약물 A와 약물 B 조합에 대한 고유 키)
-            cache_key = f"contraindication_{min(drug_a, drug_b)}_{max(drug_a, drug_b)}"
+    @classmethod
+    def get_cached_contraindication(cls, drug_a, drug_b):
+        """캐시에서 병용 금기 데이터를 가져옴."""
+        cache_key = f"contraindication:{drug_a}:{drug_b}"
+        return cache.get(cache_key)
 
-            # 캐시 확인
-            cached_result = cache.get(cache_key)
-            if cached_result is not None:
-                # 캐시에 저장된 데이터가 있다면 반환
-                is_contraindicated = cached_result
-                source = "CACHE"
-            else:
-                # 캐시에서 결과를 찾지 못한 경우 API 호출
-                is_contraindicated = self.check_contraindicated_with_pagination(drug_a, drug_b)
-                # 결과를 캐시에 저장 (24시간 동안 저장)
-                cache.set(cache_key, is_contraindicated, timeout=24 * 60 * 60)
-
-            # 결과 반환
-            if is_contraindicated:
-                return Response(
-                    {
-                        "message": f"약물 A({drug_a})와 약물 B({drug_b})는 병용 금기입니다.",
-                        "is_contraindicated": True,
-                        "sourse": source,
-                    },
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                return Response(
-                    {
-                        "message": f"약물 A({drug_a})와 약물 B({drug_b})는 병용 금기가 아닙니다.",
-                        "is_contraindicated": False,
-                        "sourse": source,
-                    },
-                    status=status.HTTP_200_OK,
-                )
-
-        except Exception as ex:
-            return Response(
-                {"error": f"병용 금기 확인 중 오류가 발생했습니다: {ex}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+    @classmethod
+    def set_cached_contraindication(cls, drug_a, drug_b, result):
+        """병용 금기 데이터를 캐시에 저장."""
+        cache_key = f"contraindication:{drug_a}:{drug_b}"
+        cache.set(cache_key, result, timeout=cls.CACHE_TIMEOUT)
 
     def check_contraindicated_with_pagination(self, drug_a, drug_b):
         """
@@ -556,6 +475,10 @@ class CheckDrugContraindicationsView(APIView):
         num_of_rows = 100  # 한 페이지에서 가져올 데이터 개수
         is_last_page = False
 
+        cached_result = self.get_cached_contraindication(drug_a, drug_b)
+        if cached_result is not None:
+            return cached_result
+
         while not is_last_page:
             # 공공 API를 호출하여 병용 금기 데이터를 가져옴
             response_data = self.fetch_contraindications_page(drug_a, page_no, num_of_rows)
@@ -563,14 +486,18 @@ class CheckDrugContraindicationsView(APIView):
             if response_data is None:
                 raise Exception(f"병용 금기 데이터를 페이지 {page_no}에서 가져오는 데 실패했습니다.")
 
+            print(f"drug_a: {drug_a}, drug_b: {drug_b}")
+
             # 현재 페이지의 병용 금기 데이터 리스트
             contraindications = response_data.get("body", {}).get("items", [])
             print(f"Page {page_no}: Found {len(contraindications)} items.")
             total_count = response_data.get("body", {}).get("totalCount", 0)  # 전체 데이터 개수
             # 병용 금기 데이터에서 약물 B가 포함되는지 확인
             for contraindication in contraindications:
-                if contraindication.get("MIXTURE_ITEM_SEQ") == drug_b:
-                    return True
+                if int(contraindication.get("MIXTURE_ITEM_SEQ")) == drug_b:
+                    self.set_cached_contraindication(drug_a, drug_b, contraindication)
+                    print("병용금기 확인")
+                    return contraindication
 
             # 다음 페이지 처리
             if page_no * num_of_rows >= total_count:
@@ -578,6 +505,8 @@ class CheckDrugContraindicationsView(APIView):
             else:
                 page_no += 1
 
+        self.set_cached_contraindication(drug_a, drug_b, False)
+        print("병용금기 없음")
         return False  # 병용 금기 데이터에서 약물 B를 찾을 수 없음
 
     def fetch_contraindications_page(self, drug_a, page_no, num_of_rows):
