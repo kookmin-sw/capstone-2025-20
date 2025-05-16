@@ -13,7 +13,6 @@ class Pill {
   final String udDocData;
   final String nbDocData;
   final String itemImage;
-  final String validTerm;
 
   Pill({
     required this.itemSeq,
@@ -27,7 +26,6 @@ class Pill {
     required this.udDocData,
     required this.nbDocData,
     required this.itemImage,
-    required this.validTerm,
   });
 
   static String _sanitize(String? value) {
