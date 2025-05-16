@@ -1,75 +1,146 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/gFPznrUY)
-# Welcome to GitHub
+<h1 align="center">
+  <img src="docs/icon_transparent2.png" alt="뭐약 로고" width="50" style="vertical-align: bottom;"/>
+  뭐약
+</h1>
 
-캡스톤 팀 생성을 축하합니다.
+# 프로젝트 소개
 
-## 팀소개 및 페이지를 꾸며주세요.
+> 알약 검색 및 병용 가능 여부 확인 어플리케이션
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+집에 남아 있는 약,  
+혹시 비슷한 증상에 맞춰 다시 복용하고 계시진 않나요?
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+의약품을 임의로 복용하다 보면,  
+함께 먹으면 안 되는 약을 동시에 복용하는 사고로 이어질 수 있습니다.
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+물론, 어떤 약을 복용해야 하는지는 전문가가 판단해야 할 영역입니다.  
+하지만 함께 복용해선 안 되는 약에 대한 경고 정도는,  
+누구나 소프트웨어를 통해 쉽게 확인할 수 있다면 좋지 않을까요?
 
-**팀페이지 주소** 2025년 20조  https://kookmin-sw.github.io/capstone-2025-20/
+그 물음에서 **뭐약**이 시작되었습니다.
 
+약의 이름뿐 아니라 생김새만으로도  
+무슨 약인지 쉽게 찾아볼 수 있고,  
+복용 중인 약물 간의 병용 가능 여부도 확인할 수 있는  
+모바일 애플리케이션, **뭐약**입니다.
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+---
 
-### 1. 프로잭트 소개
+## 기대 효과
 
-프로젝트
+- 약물 사고 예방을 통한 사회적 기여
+- 고령자 및 만성질환자의 복약 부담 경감
+- 공식적인 출처에서 신뢰할 수 있는 정보 제공
 
-### 2. 소개 영상
+---
 
-프로젝트 소개하는 영상을 추가하세요
+## 시연 영상
 
-### 3. 팀 소개
+[![시연 영상](https://img.youtube.com/vi/cUEtNkS8few/0.jpg)](https://www.youtube.com/watch?v=cUEtNkS8few)
 
-팀을 소개하세요.
+---
 
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
+## 주요 기능
 
-### 4. 사용법
+### 홈 화면
+<p>
+  <img src="docs/screenshots/home_screen.png" alt="홈 화면" width="150"/>
+</p>
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
+### 제품명으로 약 검색
+의약품의 정확한 제품명을 알고 있다면, 제품명을 통해 검색할 수 있습니다.
+<p>
+  <img src="docs/screenshots/name_search.png" alt="제품명 검색 화면" width="150"/>
+</p>
 
-### 5. 기타
+### 외형 정보 기반 검색
+제품명을 모르더라도 알약의 형태, 색상, 제형, 분할선, 식별 문자를 통해 검색할 수 있습니다.
+검색 결과 중 일치하는 의약품을 나의 복용약에 추가합니다.
+<p>
+  <img src="docs/screenshots/feature_search_1.png" alt="생김새 검색 화면" width="150"/>
+  <img src="docs/screenshots/feature_search_2.png" alt="생김새 검색 화면" width="150"/>
+  <img src="docs/screenshots/feature_search_3.png" alt="생김새 검색 화면" width="150"/>
+  <img src="docs/screenshots/feature_search_4.png" alt="생김새 검색 화면" width="150"/>
+  <img src="docs/screenshots/feature_search_5.png" alt="생김새 검색 화면" width="150"/>
+  <img src="docs/screenshots/search_result.png" alt="검색 결과 화면" width="150"/>
+</p>
 
-추가적인 내용은 자유롭게 작성하세요.
+### 카메라 기반 검색
+카메라 인식을 통해 외형 정보 입력을 대신할 수 있습니다.
+검색 결과 중 일치하는 의약품을 나의 복용약에 추가합니다.
+<p>
+  <img src="docs/screenshots/camera_search.png" alt="카메라 검색 화면" width="150"/>
+  <img src="docs/screenshots/search_result.png" alt="검색 결과 화면" width="150"/>
+</p>
 
+### 나의 복용약 관리
+나의 복용약들을 함께 복용해도 되는 지 확인할 수 있습니다.
+함께 복용할 수 없는 경우에는 그 이유와 함께 경고가 나타납니다.
+또한, 각 의약품의 효능, 용법, 주의사항 등 상세 정보를 확인할 수 있습니다.
+<p>
+  <img src="docs/screenshots/my_screen.png" alt="제품명 검색 화면" width="150"/>
+  <img src="docs/screenshots/my_screen_detail.png" alt="제품명 검색 화면" width="150"/>
+</p>
 
-## Markdown을 사용하여 내용꾸미기
+---
 
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
+## 아키텍처
 
-```markdown
-Syntax highlighted code block
+<p align="center">
+  <img src="docs/아키텍쳐.png" alt="아키텍처 다이어그램" width="600"/>
+</p>
 
-# Header 1
-## Header 2
-### Header 3
+---
 
-- Bulleted
-- List
+## 기술 스택
 
-1. Numbered
-2. List
+- **Frontend**: Flutter  
+- **Backend**: Django (REST API)  
+- **Database**: SQLite
 
-**Bold** and _Italic_ and `Code` text
+---
 
-[Link](url) and ![Image](src)
+## 환경 설정
+
+### 1. 운영환경 개요
+- 프레임워크: Django 5.1.7  
+- 프로그램 언어: Python 3.11.9  
+- 로컬 데이터베이스: SQLite  
+
+### 2. 필수 설치 패키지
+
+```bash
+# Django 및 REST Framework 설치
+pip install Django djangorestframework
+
+# CORS 설정 패키지 설치
+pip install django-cors-headers
 ```
 
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+### 3. settings.py 설정
+- DB 설정
+- CORS 설정
+- 캐싱 설정
 
-### Support or Contact
+### 4. 외부 API 인증키 발급
+- 공공데이터포털 OpenAPI 활용 신청 및 인증키 발급
+- OpenAI API Key 발급
 
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
+### 5. settings.dart 설정
+- 서버 url 설정
+
+---
+
+## 팀원 소개
+
+| 이름 | 학번 | 역할 | GitHub / 연락처 |
+|------|----------|------|------------------|
+| 김민철 | 20180485 | 팀장 / 프론트엔드 | [GitHub](https://github.com/Armont52) |
+| 조원혁 | 20180519 | 백엔드 | [GitHub](https://github.com/5starss) |
+
+---
+
+## 기타
+
+- 제작 기간: 2025.03 ~ 2025.06  
+- 참고 자료: [공공데이터포털](https://www.data.go.kr/)
