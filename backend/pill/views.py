@@ -360,14 +360,10 @@ class SearchDrugByAppearanceView(APIView):
             # Appearance 검색 결과가 있는 경우 DrugListView 호출
             if appearances.exists():
                 item_seqs = appearances.values_list("item_seq", flat=True)  # 검색된 item_seq 리스트
-                drug_list_url = reverse("drug_list")
-                factory = APIRequestFactory()
-                http_request = factory.get(drug_list_url, {'item_seq__in': ','.join(map(str, item_seqs))})
-                # DrugListView 호출
-                resolved_view = resolve(drug_list_url)
-                drug_list_response = resolved_view.func(http_request)
-
-                result_data = drug_list_response.data
+                drugs = DrugInfo.objects.filter(item_seq__in=item_seqs)
+                drug_item_seqs = drugs.values_list("item_seq", flat=True)
+                print("Drug_info_item_seq 리스트:", list(drug_item_seqs))
+                result_data = DrugInfoSerializer(drugs, many=True).data
 
                 return Response({
                     "status": "success",
