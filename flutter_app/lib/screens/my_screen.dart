@@ -27,12 +27,12 @@ class _MyScreenState extends State<MyScreen> {
     await Future.delayed(const Duration(seconds: 1));
 
     final codes = await PillStorage.load();
-    final futures = codes.map(PillInfoApiService.fetchPillByCode);
+    final futures = codes.map((code) => PillInfoApiService.fetchPillByCode(code));
     final results = await Future.wait(futures);
     final validPills = results.whereType<Pill>().toList();
 
     final interaction = await PillInfoApiService.checkInteractions(
-      validPills.map((e) => e.itemSeq).toList(),
+      validPills.map((e) => int.parse(e.itemSeq)).toList(),
     );
 
     setState(() {
@@ -42,9 +42,9 @@ class _MyScreenState extends State<MyScreen> {
     });
   }
 
-  Future<void> removePill(int itemSeq) async {
+  Future<void> removePill(String itemSeq) async {
     final codes = await PillStorage.load();
-    codes.remove(itemSeq);
+    codes.removeWhere((code) => code.toString() == itemSeq);
     await PillStorage.save(codes);
     await loadMyPills();
   }
@@ -83,8 +83,7 @@ class _MyScreenState extends State<MyScreen> {
                       final drugBName = pillMap[conflict.drugB] ?? conflict.drugB;
 
                       return Text('$drugAName와(과) $drugBName은(는) 함께 복용할 수 없습니다.\n${conflict.reason}',
-                        style: const TextStyle(fontWeight: FontWeight.bold,),
-                      );
+                        style: const TextStyle(fontWeight: FontWeight.bold,),);
                     }).toList(),
                   );
                 },
@@ -183,12 +182,12 @@ class _MyScreenState extends State<MyScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildInfoRow('효능', pill.efcyQesitm),
-                        _buildInfoRow('사용법', pill.useMethodQesitm),
-                        _buildInfoRow('주의사항', pill.atpnQesitm),
                         _buildInfoRow('제형', pill.chart),
+                        _buildInfoRow('효능', pill.eeDocData),
+                        _buildInfoRow('사용법', pill.udDocData),
                         _buildInfoRow('성분', pill.materialName),
                         _buildInfoRow('유통기한', pill.validTerm),
+                        _buildInfoRow('주의사항', pill.nbDocData),
                       ],
                     ),
                   ),

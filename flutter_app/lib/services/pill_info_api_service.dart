@@ -44,8 +44,10 @@ class PillInfoApiService {
       final response = await http.get(url);
       if (response.statusCode != 200) return null;
 
+      print(response);
+
       final data = jsonDecode(utf8.decode(response.bodyBytes));
-      final items = data['body']?['items'] as List?;
+      final items = data['results'] as List?;
       if (items == null || items.isEmpty) return null;
 
       return Pill.fromJson(items.first);
@@ -107,9 +109,7 @@ class PillInfoApiService {
 
       if (items == null || items.isEmpty) return [];
 
-      for (var item in items) {
-        print('이미지 URL: ${item['item_image']}');
-      }
+      return items.map((item) => Pill.fromJson(item)).toList();
 
       return items.map((item) => Pill.fromJson(item)).toList();
     } catch (e) {
@@ -119,8 +119,7 @@ class PillInfoApiService {
   }
 
   // 병용 금기 검사
-  static Future<InteractionResult?> checkInteractions(
-      List<int> itemSeqList) async {
+  static Future<InteractionResult?> checkInteractions(List<int> itemSeqList) async {
     final url = Uri.parse(ApiConstants.checkInteractionUrl);
     final body = jsonEncode({'itemSeqList': itemSeqList});
 

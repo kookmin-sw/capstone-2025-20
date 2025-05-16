@@ -6,6 +6,7 @@ class PillStorage {
   static Future<List<int>> load() async {
     final prefs = await SharedPreferences.getInstance();
     final codes = prefs.getStringList(_key) ?? [];
+    print('Loaded codes: $codes');
     return codes.map(int.parse).toList();
   }
 
