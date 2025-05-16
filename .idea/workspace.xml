@@ -10,6 +10,7 @@
       <change beforePath="$PROJECT_DIR$/backend/pill/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/serializers.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -151,6 +152,8 @@
       <workItem from="1746002332587" duration="14716000" />
       <workItem from="1746545169602" duration="18625000" />
       <workItem from="1746630396735" duration="3194000" />
+      <workItem from="1746970540817" duration="76319000" />
+      <workItem from="1747286109369" duration="27903000" />
     </task>
     <servers />
   </component>
