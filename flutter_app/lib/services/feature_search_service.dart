@@ -38,7 +38,7 @@ class FeatureSearchService {
         final json = jsonDecode(decoded);
         print('응답 JSON (포맷팅): ${const JsonEncoder.withIndent('  ').convert(json)}');
 
-        final items = json['data']['results'] as List<dynamic>?;
+        final items = json['data'] as List<dynamic>?;
         if (items == null || items.isEmpty) return [];
         return items.map((item) => Pill.fromJson(item)).toList();
       } else {
