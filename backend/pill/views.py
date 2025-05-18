@@ -361,9 +361,14 @@ class SearchDrugByAppearanceView(APIView):
             # Appearance 검색 결과가 있는 경우 DrugListView 호출
             if appearances.exists():
                 item_seqs = appearances.values_list("item_seq", flat=True)  # 검색된 item_seq 리스트
-                drugs = DrugInfo.objects.filter(item_seq__in=item_seqs)
-                drug_item_seqs = drugs.values_list("item_seq", flat=True)
-                print("Drug_info_item_seq 리스트:", list(drug_item_seqs))
+
+                # Appearance에서 item_image를 서브쿼리로 가져오기
+                appearances = Appearance.objects.filter(item_seq=OuterRef("item_seq")).values("item_image")[:1]
+                drugs = DrugInfo.objects.filter(item_seq__in=item_seqs).annotate(
+                    item_image=Subquery(appearances)
+                )
+
+                # Serialize(item_image 포함)
                 result_data = DrugInfoSerializer(drugs, many=True).data
 
                 return Response({
