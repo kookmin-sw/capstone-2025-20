@@ -1,13 +1,10 @@
 from openai import OpenAI
-import base64
 from pill.APIsettings import ApiConstants
 
 client = OpenAI(api_key=ApiConstants.openai_api_key)
 
-def extract_appearance_data(image_path):
-    with open(image_path, "rb") as img_file:
-        image_bytes = img_file.read()
-        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+def extract_appearance_data(image_file):
+    image_bytes = image_file.read()
 
     prompt = (
         "이미지를 보고 알약의 외형 정보를 추출하라. 응답은 아래 형식의 JSON으로만 하며, "
@@ -48,17 +45,15 @@ def extract_appearance_data(image_path):
     )
 
     response = client.chat.completions.create(
-        model="gpt-4.1-nano",
+        model="gpt-4o",
         messages=[
             {"role": "system", "content": prompt},
             {
                 "role": "user",
                 "content": [
                     {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{image_base64}"
-                        }
+                        "type": "image",
+                        "image": image_bytes
                     }
                 ]
             }
