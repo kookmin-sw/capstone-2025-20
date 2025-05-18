@@ -19,13 +19,14 @@ from rest_framework.test import APIRequestFactory
 from rest_framework import status
 from .models import *
 from .serializers import *
+from .settings import ApiConstants
 
 class SaveDrugDataView(APIView):
     """
     공공 API로부터 데이터를 가져와 DB에 저장하는 기능
     """
-    API_URL = "http://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService06/getDrugPrdtPrmsnDtlInq05"
-    API_KEY =
+    API_URL = ApiConstants.drug_data_api_url
+    API_KEY = ApiConstants.drug_data_api_key
 
     def post(self, request):
         """
@@ -159,8 +160,8 @@ class SaveAppearanceDataView(APIView):
     """
     공공 API로부터 약의 외형 데이터를 가져와 `Appearance` 모델에 저장하는 뷰
     """
-    API_URL = "http://apis.data.go.kr/1471000/MdcinGrnIdntfcInfoService01/getMdcinGrnIdntfcInfoList01"
-    API_KEY =
+    API_URL = ApiConstants.appearance_data_api_url
+    API_KEY = ApiConstants.appearance_data_api_key
 
     def post(self, request):
         """
@@ -446,8 +447,8 @@ class CheckDrugContraindicationsView(APIView):
     """
     두 약물 (A와 B)의 병용 금기 여부를 확인하는 API (페이징 처리된 병용 금기 데이터를 확인)
     """
-    API_URL = "http://apis.data.go.kr/1471000/DURPrdlstInfoService03/getUsjntTabooInfoList03"  # 병용 금기 조회 API의 URL
-    API_KEY =
+    API_URL = ApiConstants.drug_interaction_api_url
+    API_KEY = ApiConstants.drug_interaction_api_key
 
     CACHE_TIMEOUT =  24 * 60 * 60
 
