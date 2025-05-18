@@ -82,8 +82,16 @@ class _MyScreenState extends State<MyScreen> {
                       final drugAName = pillMap[conflict.drugA] ?? conflict.drugA;
                       final drugBName = pillMap[conflict.drugB] ?? conflict.drugB;
 
-                      return Text('$drugAName와(과) $drugBName은(는) 함께 복용할 수 없습니다.\n${conflict.reason}',
-                        style: const TextStyle(fontWeight: FontWeight.bold,),);
+                      return Text(
+                        '$drugAName와(과)\n'
+                            '$drugBName은(는)\n'
+                            '함께 복용할 수 없습니다.\n'
+                            '이유: ${conflict.reason}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
                     }).toList(),
                   );
                 },

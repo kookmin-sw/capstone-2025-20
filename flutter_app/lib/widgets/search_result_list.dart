@@ -23,6 +23,7 @@ class SearchResultList extends StatelessWidget {
         final pill = pills[index];
         return Card(
           margin: const EdgeInsets.symmetric(vertical: 6),
+          color: Color(0xFFF3FFF8),
           child: ListTile(
             leading: SizedBox(
               width: 100,

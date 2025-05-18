@@ -5,21 +5,6 @@ import 'dummy_result_screen.dart'; // 더미 결과
 class CameraSearchScreen extends StatelessWidget {
   const CameraSearchScreen({super.key});
 
-  // Future<void> _pickImage(BuildContext context) async {
-  //   final picker = ImagePicker();
-  //   final pickedFile = await picker.pickImage(source: ImageSource.camera);
-  //
-  //   if (pickedFile != null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('이미지를 성공적으로 촬영했습니다.')),
-  //     );
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('이미지 촬영이 취소되었습니다.')),
-  //     );
-  //   }
-  // }
-
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
@@ -54,6 +39,9 @@ class CameraSearchScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () => _pickImage(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF22CE7D),
+              ),
               child: const Text('촬영 시작'),
             ),
           ],
