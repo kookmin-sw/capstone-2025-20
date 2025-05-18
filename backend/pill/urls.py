@@ -10,5 +10,6 @@ urlpatterns = [
     path('drug_check_contraindications/', CheckDrugContraindicationsView.as_view(),
          name='check_contraindications'), # 병용금기 확인, 예) /api/drug_check_contraindications/?drugA=201001011&drugB=200100101
     path('checkInteractions/', CheckInteractionsView.as_view(), name='check_interactions'),  # 병용 금기 확인 API
-    
+    path('drug/search/image/', CameraSearchView.as_view(), name='camera-search'),
+
 ]
