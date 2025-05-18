@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/camera_search_service.dart';
 import 'search_result_screen.dart';
+import 'dummy_result_screen.dart';
 
 class CameraSearchScreen extends StatelessWidget {
   const CameraSearchScreen({super.key});
@@ -13,23 +14,29 @@ class CameraSearchScreen extends StatelessWidget {
 
     if (pickedFile != null) {
       final imageFile = File(pickedFile.path);
-      try {
-        final results = await CameraSearchService.searchByImage(imageFile);
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SearchResultScreen(results: results),
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('검색 실패: $e')),
-          );
-        }
-      }
+      // try {
+      //   final results = await CameraSearchService.searchByImage(imageFile);
+      //   if (context.mounted) {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => SearchResultScreen(results: results),
+      //       ),
+      //     );
+      //   }
+      // } catch (e) {
+      //   if (context.mounted) {
+      //     ScaffoldMessenger.of(context).showSnackBar(
+      //       SnackBar(content: Text('검색 실패: $e')),
+      //     );
+      //   }
+      // }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const DummyResultScreen(),
+        ),
+      );
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

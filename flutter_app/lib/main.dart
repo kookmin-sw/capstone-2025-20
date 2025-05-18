@@ -35,6 +35,9 @@ class MyApp extends StatelessWidget {
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: Color(0xFF22CE7D),
         ),
+        textSelectionTheme: TextSelectionThemeData(
+          cursorColor: Color(0xFF167A4A),
+        ),
         inputDecorationTheme: InputDecorationTheme(
           focusedBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Color(0xFFA5D6A7), width: 2.0),
@@ -43,6 +46,9 @@ class MyApp extends StatelessWidget {
             borderSide: BorderSide(color: Colors.grey),
           ),
           labelStyle: TextStyle(color: Colors.grey),
+        ),
+        progressIndicatorTheme: ProgressIndicatorThemeData(
+          color: Color(0xFF22CE7D),
         ),
       ),
       initialRoute: '/home',

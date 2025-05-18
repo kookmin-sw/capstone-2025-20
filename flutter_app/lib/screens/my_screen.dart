@@ -4,6 +4,7 @@ import '../model/my_pills.dart';
 import '../model/interaction_result.dart';
 import '../services/pill_info_api_service.dart';
 import '../utils/pill_storage.dart';
+import 'package:flutter/cupertino.dart';
 
 class MyScreen extends StatefulWidget {
   const MyScreen({super.key});
@@ -31,9 +32,12 @@ class _MyScreenState extends State<MyScreen> {
     final results = await Future.wait(futures);
     final validPills = results.whereType<Pill>().toList();
 
-    final interaction = await PillInfoApiService.checkInteractions(
-      validPills.map((e) => e.itemSeq).toList(),
-    );
+    InteractionResult? interaction;
+    if (validPills.length > 1) {
+      interaction = await PillInfoApiService.checkInteractions(
+        validPills.map((e) => e.itemSeq).toList(),
+      );
+    }
 
     setState(() {
       pills = validPills;
@@ -55,6 +59,13 @@ class _MyScreenState extends State<MyScreen> {
       appBar: AppBar(title: const Text('나의 복용약')),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
+          : pills.isEmpty
+          ? const Center(
+        child: Text(
+          '복용약을 추가해주세요',
+          style: TextStyle(fontSize: 16),
+        ),
+      )
           : Column(
         children: [
           const SizedBox(height: 16),
@@ -71,7 +82,6 @@ class _MyScreenState extends State<MyScreen> {
               padding: const EdgeInsets.only(top: 8),
               child: Builder(
                 builder: (context) {
-                  // Map<itemSeq as String, itemName>
                   final pillMap = {
                     for (var pill in pills) pill.itemSeq.toString(): pill.itemName
                   };
@@ -107,8 +117,57 @@ class _MyScreenState extends State<MyScreen> {
               },
             ),
           ),
+          const SizedBox(height: 12),
+          Center(
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF22CE7D),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(180, 48),
+              ),
+              label: const Text('전체 삭제'),
+              onPressed: () async {
+                final confirm = await showCupertinoDialog<bool>(
+                  context: context,
+                  builder: (context) => CupertinoAlertDialog(
+                    title: const Text('전체 삭제'),
+                    content: const Text('복용약을 모두 삭제하시겠습니까?'),
+                    actions: [
+                      CupertinoDialogAction(
+                        child: const Text('취소', style: TextStyle(color: Colors.black),),
+                        onPressed: () => Navigator.of(context).pop(false),
+                      ),
+                      CupertinoDialogAction(
+                        isDestructiveAction: true,
+                        child: const Text('삭제'),
+                        onPressed: () => Navigator.of(context).pop(true),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirm == true) {
+                  await PillStorage.save([]);
+                  await loadMyPills();
+                  showCupertinoDialog(
+                    context: context,
+                    builder: (context) => CupertinoAlertDialog(
+                      title: const Text('삭제 완료'),
+                      content: const Text('완쾌를 축하드립니다.'),
+                      actions: [
+                        CupertinoDialogAction(
+                          child: const Text('확인', style: TextStyle(color: Colors.black),),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
         ],
-      ),
+      )
     );
   }
 

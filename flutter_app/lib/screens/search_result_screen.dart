@@ -21,33 +21,27 @@ class SearchResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        _goHome(context);
-        return false;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('검색 결과'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () => _goHome(context),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('검색 결과'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: results.isEmpty
-              ? const Center(child: Text('검색 결과가 없습니다.'))
-              : Column(
-            children: [
-              Expanded(
-                child: SearchResultList(
-                  pills: results,
-                  onAdd: (itemSeq) => _addPill(context, itemSeq),
-                ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: results.isEmpty
+            ? const Center(child: Text('검색 결과가 없습니다.'))
+            : Column(
+          children: [
+            Expanded(
+              child: SearchResultList(
+                pills: results,
+                onAdd: (itemSeq) => _addPill(context, itemSeq),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
