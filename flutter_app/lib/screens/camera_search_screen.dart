@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/camera_search_service.dart';
+import 'search_result_screen.dart';
 import 'dummy_result_screen.dart'; // 더미 결과
 
 class CameraSearchScreen extends StatelessWidget {
   const CameraSearchScreen({super.key});
-
-  // Future<void> _pickImage(BuildContext context) async {
-  //   final picker = ImagePicker();
-  //   final pickedFile = await picker.pickImage(source: ImageSource.camera);
-  //
-  //   if (pickedFile != null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('이미지를 성공적으로 촬영했습니다.')),
-  //     );
-  //   } else {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('이미지 촬영이 취소되었습니다.')),
-  //     );
-  //   }
-  // }
 
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const DummyResultScreen()),
-      );
+      final imageFile = File(pickedFile.path);
+      try {
+        final results = await CameraSearchService.searchByImage(imageFile);
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SearchResultScreen(results: results)),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('검색 실패: $e')),
+          );
+        }
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이미지 촬영이 취소되었습니다.')),
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

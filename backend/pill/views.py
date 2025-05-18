@@ -20,6 +20,8 @@ from rest_framework import status
 from .models import *
 from .serializers import *
 from .settings import ApiConstants
+from .vision import extract_appearance_data
+
 
 class SaveDrugDataView(APIView):
     """
@@ -533,3 +535,61 @@ class CheckDrugContraindicationsView(APIView):
         except Exception as ex:
             print(f"API 호출 중 오류 발생: {ex}")
             return None
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CameraSearchView(APIView):
+    """
+    사용자가 업로드한 이미지로 알약 외형 정보를 추출하고,
+    해당 정보로 약물 검색 결과를 반환하는 뷰
+    """
+
+    def post(self, request):
+        try:
+            image_file = request.FILES.get('image')
+            if not image_file:
+                return Response({"error": "이미지 파일이 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Vision API를 통해 외형 정보 추출
+            appearance_data = extract_appearance_data(image_file)
+            if not appearance_data:
+                return Response({"error": "외형 정보 추출 실패"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # 기존의 SearchDrugByAppearanceView와 동일한 로직 적용
+            query = Q()
+
+            for field, db_filter in [
+                ("shape", lambda val: Q(drug_shape__icontains=val)),
+                ("color", lambda val: Q(color_class1__icontains=val) | Q(color_class2__icontains=val)),
+                ("line", lambda val: Q(line_front__icontains=val) | Q(line_back__icontains=val)),
+                ("form", lambda val: Q(chart__icontains=val)),
+                ("text", lambda val: Q(print_front__icontains=val) | Q(print_back__icontains=val) |
+                                     Q(mark_code_front__icontains=val) | Q(mark_code_back__icontains=val) |
+                                     Q(mark_code_front_anal__icontains=val) | Q(mark_code_back_anal__icontains=val)),
+            ]:
+                values = appearance_data.get(field, [])
+                if values:
+                    field_query = Q()
+                    for val in values:
+                        field_query |= db_filter(val)
+                    query &= field_query
+
+            if not query:
+                return Response({"error": "유효한 외형 정보가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Appearance 모델 필터링
+            appearances = Appearance.objects.filter(query)
+            if appearances.exists():
+                item_seqs = appearances.values_list("item_seq", flat=True)
+                image_subquery = Appearance.objects.filter(item_seq=OuterRef("item_seq")).values("item_image")[:1]
+                drugs = DrugInfo.objects.filter(item_seq__in=item_seqs).annotate(
+                    item_image=Subquery(image_subquery)
+                )
+                result_data = DrugInfoSerializer(drugs, many=True).data
+
+                return Response({"status": "success", "count": len(result_data), "data": result_data}, status=200)
+
+            return Response({"status": "success", "count": 0, "data": [], "message": "검색 결과가 없습니다."}, status=200)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
