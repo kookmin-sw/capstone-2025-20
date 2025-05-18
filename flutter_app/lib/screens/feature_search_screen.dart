@@ -280,8 +280,8 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                       onPressed: prevStep,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        foregroundColor: Colors.blue,
-                        side: const BorderSide(color: Colors.blue, width: 2),
+                        foregroundColor: Color(0xFF22CE7D),
+                        side: const BorderSide(color: Color(0xFF22CE7D), width: 2),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -301,7 +301,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                   child: ElevatedButton(
                     onPressed: canProceed() ? nextStep : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Color(0xFF22CE7D),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
@@ -412,9 +412,9 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.lightBlue[100] : Colors.white,
+                    color: isSelected ? Color(0xFFA6F3D0) : Colors.white,
                     border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey,
+                      color: isSelected ? Color(0xFF22CE7D) : Colors.grey,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -440,7 +440,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: isSelected ? Colors.blue[900] : Colors.black,
+                          color: isSelected ? Color(0xFF105938) : Colors.black,
                         ),
                       ),
                     ],
@@ -526,9 +526,9 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.lightBlue[100] : Colors.white,
+                    color: isSelected ? Color(0xFFA6F3D0) : Colors.white,
                     border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey,
+                      color: isSelected ? Color(0xFF22CE7D) : Colors.grey,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -570,7 +570,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: isSelected ? Colors.blue[900] : Colors.black,
+                          color: isSelected ? Color(0xFF105938) : Colors.black,
                         ),
                       ),
                     ],
@@ -639,9 +639,9 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.lightBlue[100] : Colors.white,
+                    color: isSelected ? Color(0xFFA6F3D0) : Colors.white,
                     border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey,
+                      color: isSelected ? Color(0xFF22CE7D) : Colors.grey,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -664,7 +664,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.blue[900] : Colors.black,
+                          color: isSelected ? Color(0xFF105938) : Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -689,7 +689,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
     };
 
     bool isAllLinesSelected() {
-      final nonTotal = lines.where((e) => e != '전체').toSet();
+      final nonTotal = lines.where((e) => e != '전체').map((e) => lineServerValueMap[e] ?? e).toSet();
       final selectedSet = selectedLineList.toSet();
       return selectedSet.containsAll(nonTotal) && selectedSet.length == nonTotal.length;
     }
@@ -734,9 +734,9 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                 },
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.lightBlue[100] : Colors.white,
+                    color: isSelected ? Color(0xFFA6F3D0) : Colors.white,
                     border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey,
+                      color: isSelected ? Color(0xFF22CE7D) : Colors.grey,
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -759,7 +759,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.blue[900] : Colors.black,
+                          color: isSelected ? Color(0xFF105938) : Colors.black,
                         ),
                         textAlign: TextAlign.center,
                       ),
