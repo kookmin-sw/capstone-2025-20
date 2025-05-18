@@ -1,7 +1,8 @@
 from openai import OpenAI
 import base64
+from settings import ApiConstants
 
-client = OpenAI()
+client = OpenAI(api_key = ApiConstants.openai_api_key)
 
 def extract_appearance_data(image_path):
     with open(image_path, "rb") as img_file:
