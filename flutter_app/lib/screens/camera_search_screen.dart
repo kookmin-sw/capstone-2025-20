@@ -62,7 +62,7 @@ class CameraSearchScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () => _pickImage(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal, // 민트색
+                backgroundColor: Color(0xFF22CE7D),
               ),
               child: const Text('촬영 시작'),
             ),

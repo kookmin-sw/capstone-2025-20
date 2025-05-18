@@ -130,6 +130,8 @@ class PillInfoApiService {
         body: body,
       );
 
+      print('응답 바디: ${utf8.decode(response.bodyBytes)}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(utf8.decode(response.bodyBytes));
         return InteractionResult.fromJson(data);
