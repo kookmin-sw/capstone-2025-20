@@ -7,10 +7,9 @@
     <list default="true" id="36c4cf63-7bd2-493b-ad54-2d6fd0361046" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/myapi/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/myapi/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pill/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/serializers.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pill/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/backend/pill/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pill/vision.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/vision.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pill/APIsettings.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,30 +42,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Django Server.capstone-2025-20.executor&quot;: &quot;Debug&quot;,
-    &quot;Django 서버.capstone-2025-20.executor&quot;: &quot;Debug&quot;,
-    &quot;Python.views.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;django-server&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/capstone-2025-20/backend/pill&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.intellij.python.django.customization.DjangoModulesConfigurable&quot;,
-    &quot;sql.rename.search.for.storage.occurrences&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Django Server.capstone-2025-20.executor": "Debug",
+    "Django 서버.capstone-2025-20.executor": "Debug",
+    "Python.views.executor": "Run",
+    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
+    "git-widget-placeholder": "vision에 #22개",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "C:/capstone-2025-20/backend/pill",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.intellij.python.django.customization.DjangoModulesConfigurable",
+    "sql.rename.search.for.storage.occurrences": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\capstone-2025-20\backend\pill" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\capstone-2025-20\backend\pill" />
     </key>
   </component>
@@ -153,7 +155,7 @@
       <workItem from="1746545169602" duration="18625000" />
       <workItem from="1746630396735" duration="3194000" />
       <workItem from="1746970540817" duration="76319000" />
-      <workItem from="1747286109369" duration="27903000" />
+      <workItem from="1747286109369" duration="38352000" />
     </task>
     <servers />
   </component>

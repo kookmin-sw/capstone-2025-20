@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dummy_result_screen.dart'; // 더미 결과
+import '../services/camera_search_service.dart';
+import 'search_result_screen.dart';
 
 class CameraSearchScreen extends StatelessWidget {
   const CameraSearchScreen({super.key});
@@ -10,21 +12,41 @@ class CameraSearchScreen extends StatelessWidget {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const DummyResultScreen()),
-      );
+      final imageFile = File(pickedFile.path);
+      try {
+        final results = await CameraSearchService.searchByImage(imageFile);
+        if (context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SearchResultScreen(results: results),
+            ),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('검색 실패: $e')),
+          );
+        }
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이미지 촬영이 취소되었습니다.')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지 촬영이 취소되었습니다.')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('카메라로 검색')),
+      appBar: AppBar(
+        title: const Text('카메라로 검색'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
