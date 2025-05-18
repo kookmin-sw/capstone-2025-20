@@ -36,7 +36,7 @@
 
 ## 시연 영상
 
-[![시연 영상](https://img.youtube.com/vi/cUEtNkS8few/0.jpg)](https://www.youtube.com/watch?v=cUEtNkS8few)
+[![시연 영상](https://img.youtube.com/vi/qAw-0anvaMQ/0.jpg)](https://youtu.be/qAw-0anvaMQ)
 
 ---
 
