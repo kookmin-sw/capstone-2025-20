@@ -1,6 +1,6 @@
 from openai import OpenAI
 import base64
-from settings import ApiConstants
+from pill.APIsettings import ApiConstants
 
 client = OpenAI(api_key = ApiConstants.openai_api_key)
 
