@@ -19,7 +19,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework import status
 from .models import *
 from .serializers import *
-from .settings import ApiConstants
+from APIsettings import ApiConstants
 from .vision import extract_appearance_data
 
 
