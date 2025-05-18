@@ -119,7 +119,7 @@ class PillInfoApiService {
   }
 
   // 병용 금기 검사
-  static Future<InteractionResult?> checkInteractions(List<int> itemSeqList) async {
+  static Future<InteractionResult?> checkInteractions(List<String> itemSeqList) async {
     final url = Uri.parse(ApiConstants.checkInteractionUrl);
     final body = jsonEncode({'itemSeqList': itemSeqList});
 

@@ -32,7 +32,7 @@ class _MyScreenState extends State<MyScreen> {
     final validPills = results.whereType<Pill>().toList();
 
     final interaction = await PillInfoApiService.checkInteractions(
-      validPills.map((e) => int.parse(e.itemSeq)).toList(),
+      validPills.map((e) => e.itemSeq).toList(),
     );
 
     setState(() {
