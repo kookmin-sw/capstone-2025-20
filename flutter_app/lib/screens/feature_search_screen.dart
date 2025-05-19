@@ -681,9 +681,10 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
 
   Widget _buildLineStep() {
     final lines = ['전체', '없음', '-형', '+형'];
-    final lineServerValueMap = {'-형': '-', '+형': '+'};
+    final lineServerValueMap = {'-형': '-', '+형': '+', '없음': ''};
 
     final lineImageMap = {
+      '없음': 'assets/line_none.png',
       '-형': 'assets/line1.png',
       '+형': 'assets/line2.png',
     };
@@ -780,29 +781,37 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
       children: [
         const Text('식별 문자 입력', style: TextStyle(fontSize: 16)),
         const SizedBox(height: 12),
-        TextField(
-          decoration: const InputDecoration(
-            labelText: '앞면 식별 문자',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) {
-            setState(() {
-              frontIdentifier = value.trim();
-            });
-          },
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          enabled: frontIdentifier.isNotEmpty,
-          decoration: const InputDecoration(
-            labelText: '뒷면 식별 문자',
-            border: OutlineInputBorder(),
-          ),
-          onChanged: (value) {
-            setState(() {
-              backIdentifier = value.trim();
-            });
-          },
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: const InputDecoration(
+                  labelText: '앞면 식별 문자',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    frontIdentifier = value.trim();
+                  });
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: TextField(
+                enabled: frontIdentifier.isNotEmpty,
+                decoration: const InputDecoration(
+                  labelText: '뒷면 식별 문자',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    backIdentifier = value.trim();
+                  });
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );
