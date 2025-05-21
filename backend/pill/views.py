@@ -19,7 +19,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework import status
 from .models import *
 from .serializers import *
-from APIsettings import ApiConstants
+from .APIsettings import ApiConstants
 from .vision import extract_appearance_data
 
 
@@ -124,7 +124,7 @@ class SaveDrugDataView(APIView):
             except Exception as ex:
                 print(f"DB 저장 중 오류 발생: {ex}")
 
-        print(f"총 저장된 갯수: {drugs_to_create}")
+        print(f"총 저장된 갯수: {len(drugs_to_create)}")
         return seq_list
 
     def delete_db_data(self, seq_list):
