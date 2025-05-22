@@ -83,6 +83,7 @@
 <p>
   <img src="docs/screenshots/my_screen.png" alt="제품명 검색 화면" width="150"/>
   <img src="docs/screenshots/my_screen_detail.png" alt="제품명 검색 화면" width="150"/>
+  <img src="docs/screenshots/my_screen_danger.png" alt="제품명 검색 화면" width="150"/>
 </p>
 
 ---
