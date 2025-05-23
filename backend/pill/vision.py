@@ -47,7 +47,7 @@ def extract_appearance_data(image_file):
     )
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.1",
         messages=[
             {"role": "system", "content": prompt},
             {
@@ -55,7 +55,9 @@ def extract_appearance_data(image_file):
                 "content": [
                     {
                         "type": "image_url",
-                        "image_url": f"data:image/jpeg;base64,{base64_image}"
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{base64_image}"
+                        }
                     }
                 ]
             }
