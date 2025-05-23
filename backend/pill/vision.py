@@ -1,3 +1,4 @@
+import base64
 from openai import OpenAI
 from pill.APIsettings import ApiConstants
 
@@ -5,6 +6,7 @@ client = OpenAI(api_key=ApiConstants.openai_api_key)
 
 def extract_appearance_data(image_file):
     image_bytes = image_file.read()
+    base64_image = base64.b64encode(image_bytes).decode('utf-8')
 
     prompt = (
         "이미지를 보고 알약의 외형 정보를 추출하라. 응답은 아래 형식의 JSON으로만 하며, "
@@ -52,8 +54,8 @@ def extract_appearance_data(image_file):
                 "role": "user",
                 "content": [
                     {
-                        "type": "image",
-                        "image": image_bytes
+                        "type": "image_url",
+                        "image_url": f"data:image/jpeg;base64,{base64_image}"
                     }
                 ]
             }
