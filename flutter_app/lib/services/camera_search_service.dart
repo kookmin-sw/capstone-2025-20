@@ -15,7 +15,8 @@ class CameraSearchService {
     final response = await http.Response.fromStream(streamedResponse);
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      final decoded = utf8.decode(response.bodyBytes);
+      final data = jsonDecode(decoded);
       final List pillsJson = data['data'];
       return pillsJson.map((json) => Pill.fromJson(json)).toList();
     } else {
