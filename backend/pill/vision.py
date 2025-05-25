@@ -1,6 +1,6 @@
 import base64
 from openai import OpenAI
-from pill.APIsettings import ApiConstants
+from APIsettings import ApiConstants
 
 client = OpenAI(api_key=ApiConstants.openai_api_key)
 
@@ -13,14 +13,16 @@ def extract_appearance_data(image_file):
 
     response = client.chat.completions.create(
         model="gpt-4.1-nano",
-        input=[{
+        messages=[{
         "role": "user",
         "content": [
-            {"type": "input_text", "text": prompt},
+            {"type": "text", "text": prompt},
             {
-                "type": "input_image",
-                "image_url": "",
-            },
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:image/jpeg;base64,{base64_image}"
+                }
+            }
         ],
     }],
         temperature=0,
