@@ -498,7 +498,7 @@ class CheckDrugContraindicationsView(APIView):
             total_count = response_data.get("body", {}).get("totalCount", 0)  # 전체 데이터 개수
             # 병용 금기 데이터에서 약물 B가 포함되는지 확인
             for contraindication in contraindications:
-                if int(contraindication.get("MIXTURE_ITEM_SEQ")) == drug_b:
+                if int(contraindication.get("MIXTURE_ITEM_SEQ")) == int(drug_b):
                     self.set_cached_contraindication(drug_a, drug_b, contraindication)
                     print("병용금기 확인")
                     return contraindication
