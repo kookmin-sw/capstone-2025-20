@@ -543,53 +543,57 @@ class CameraSearchView(APIView):
     사용자가 업로드한 이미지로 알약 외형 정보를 추출하고,
     해당 정보로 약물 검색 결과를 반환하는 뷰
     """
-
     def post(self, request):
         try:
             image_file = request.FILES.get('image')
             if not image_file:
                 return Response({"error": "이미지 파일이 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Vision API를 통해 외형 정보 추출
-            appearance_data = extract_appearance_data(image_file)
-            if not appearance_data:
-                return Response({"error": "외형 정보 추출 실패"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Vision API 호출
+            appearance_data_json = extract_appearance_data(image_file)
+            try:
+                appearance_data = json.loads(appearance_data_json)
+            except json.JSONDecodeError:
+                return Response({"error": "Vision API 응답이 JSON 형식이 아닙니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            # 기존의 SearchDrugByAppearanceView와 동일한 로직 적용
+            if not isinstance(appearance_data, dict):
+                return Response({"error": "올바르지 않은 외형 데이터 형식입니다."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            # 필드별 Q 쿼리 구성
             query = Q()
+            field_map = {
+                "shape": lambda v: Q(drug_shape__icontains=v),
+                "color": lambda v: Q(color_class1__icontains=v) | Q(color_class2__icontains=v),
+                "line": lambda v: Q(line_front__icontains=v) | Q(line_back__icontains=v),
+                "form": lambda v: Q(chart__icontains=v),
+                "text": lambda v: Q(print_front__icontains=v) | Q(print_back__icontains=v) |
+                                  Q(mark_code_front__icontains=v) | Q(mark_code_back__icontains=v) |
+                                  Q(mark_code_front_anal__icontains=v) | Q(mark_code_back_anal__icontains=v),
+            }
 
-            for field, db_filter in [
-                ("shape", lambda val: Q(drug_shape__icontains=val)),
-                ("color", lambda val: Q(color_class1__icontains=val) | Q(color_class2__icontains=val)),
-                ("line", lambda val: Q(line_front__icontains=val) | Q(line_back__icontains=val)),
-                ("form", lambda val: Q(chart__icontains=val)),
-                ("text", lambda val: Q(print_front__icontains=val) | Q(print_back__icontains=val) |
-                                     Q(mark_code_front__icontains=val) | Q(mark_code_back__icontains=val) |
-                                     Q(mark_code_front_anal__icontains=val) | Q(mark_code_back_anal__icontains=val)),
-            ]:
+            for field, builder in field_map.items():
                 values = appearance_data.get(field, [])
-                if values:
-                    field_query = Q()
+                if isinstance(values, list) and values:
+                    subquery = Q()
                     for val in values:
-                        field_query |= db_filter(val)
-                    query &= field_query
+                        if val:
+                            subquery |= builder(val)
+                    query &= subquery
 
             if not query:
                 return Response({"error": "유효한 외형 정보가 없습니다."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Appearance 모델 필터링
+            # Appearance → DrugInfo 매핑
             appearances = Appearance.objects.filter(query)
-            if appearances.exists():
-                item_seqs = appearances.values_list("item_seq", flat=True)
-                image_subquery = Appearance.objects.filter(item_seq=OuterRef("item_seq")).values("item_image")[:1]
-                drugs = DrugInfo.objects.filter(item_seq__in=item_seqs).annotate(
-                    item_image=Subquery(image_subquery)
-                )
-                result_data = DrugInfoSerializer(drugs, many=True).data
+            if not appearances.exists():
+                return Response({"status": "success", "count": 0, "data": [], "message": "검색 결과가 없습니다."}, status=200)
 
-                return Response({"status": "success", "count": len(result_data), "data": result_data}, status=200)
+            item_seqs = appearances.values_list("item_seq", flat=True)
+            image_subquery = Appearance.objects.filter(item_seq=OuterRef("item_seq")).values("item_image")[:1]
+            drugs = DrugInfo.objects.filter(item_seq__in=item_seqs).annotate(item_image=Subquery(image_subquery))
+            serialized = DrugInfoSerializer(drugs, many=True).data
 
-            return Response({"status": "success", "count": 0, "data": [], "message": "검색 결과가 없습니다."}, status=200)
+            return Response({"status": "success", "count": len(serialized), "data": serialized}, status=200)
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
