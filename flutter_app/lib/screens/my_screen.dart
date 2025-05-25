@@ -118,51 +118,65 @@ class _MyScreenState extends State<MyScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          Center(
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF22CE7D),
-                foregroundColor: Colors.white,
-                minimumSize: const Size(180, 48),
-              ),
-              label: const Text('전체 삭제'),
-              onPressed: () async {
-                final confirm = await showCupertinoDialog<bool>(
-                  context: context,
-                  builder: (context) => CupertinoAlertDialog(
-                    title: const Text('전체 삭제'),
-                    content: const Text('복용약을 모두 삭제하시겠습니까?'),
-                    actions: [
-                      CupertinoDialogAction(
-                        child: const Text('취소', style: TextStyle(color: Colors.black),),
-                        onPressed: () => Navigator.of(context).pop(false),
-                      ),
-                      CupertinoDialogAction(
-                        isDestructiveAction: true,
-                        child: const Text('삭제'),
-                        onPressed: () => Navigator.of(context).pop(true),
-                      ),
-                    ],
-                  ),
-                );
-                if (confirm == true) {
-                  await PillStorage.save([]);
-                  await loadMyPills();
-                  showCupertinoDialog(
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).padding.bottom + 12,
+            ),
+            child: Center(
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFF22CE7D),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(180, 48),
+                ),
+                label: const Text('전체 삭제'),
+                onPressed: () async {
+                  final confirm = await showCupertinoDialog<bool>(
                     context: context,
                     builder: (context) => CupertinoAlertDialog(
-                      title: const Text('삭제 완료'),
-                      content: const Text('완쾌를 축하드립니다.'),
+                      title: const Text('전체 삭제'),
+                      content: const Text('복용약을 모두 삭제하시겠습니까?'),
                       actions: [
                         CupertinoDialogAction(
-                          child: const Text('확인', style: TextStyle(color: Colors.black),),
-                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text(
+                            '취소',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          onPressed: () =>
+                              Navigator.of(context).pop(false),
+                        ),
+                        CupertinoDialogAction(
+                          isDestructiveAction: true,
+                          child: const Text('삭제'),
+                          onPressed: () =>
+                              Navigator.of(context).pop(true),
                         ),
                       ],
                     ),
                   );
-                }
-              },
+                  if (confirm == true) {
+                    await PillStorage.save([]);
+                    await loadMyPills();
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (context) => CupertinoAlertDialog(
+                        title: const Text('삭제 완료'),
+                        content: const Text('완쾌를 축하드립니다.'),
+                        actions: [
+                          CupertinoDialogAction(
+                            child: const Text(
+                              '확인',
+                              style: TextStyle(color: Colors.black),
+                            ),
+                            onPressed: () =>
+                                Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
             ),
           ),
           const SizedBox(height: 12),
