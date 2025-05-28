@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../model/pill.dart';
-import '../model/my_pills.dart';
 import '../model/interaction_result.dart';
 import '../services/pill_info_api_service.dart';
 import '../utils/pill_storage.dart';
