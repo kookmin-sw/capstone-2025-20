@@ -5,6 +5,7 @@ import 'package:flutter_app/screens/camera_search_screen.dart';
 import 'package:flutter_app/screens/feature_search_screen.dart';
 import 'package:flutter_app/screens/name_search_screen.dart';
 import 'package:flutter_app/screens/my_screen.dart';
+import 'package:flutter/cupertino.dart';
 
 void main() => runApp(MyApp());
 
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
         appBarTheme: AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
+          surfaceTintColor: Colors.white
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -37,6 +39,8 @@ class MyApp extends StatelessWidget {
         ),
         textSelectionTheme: TextSelectionThemeData(
           cursorColor: Color(0xFF167A4A),
+          selectionColor: Color(0xFFB2DFDB),
+          selectionHandleColor: Color(0xFF22CE7D),
         ),
         inputDecorationTheme: InputDecorationTheme(
           focusedBorder: OutlineInputBorder(
@@ -51,6 +55,14 @@ class MyApp extends StatelessWidget {
           color: Color(0xFF22CE7D),
         ),
       ),
+      builder: (context, child) {
+      return CupertinoTheme(
+        data: CupertinoThemeData(
+          primaryColor: Color(0xFF22CE7D),
+        ),
+        child: child!,
+      );
+    },
       initialRoute: '/home',
       routes: {
         '/home': (context) => HomeScreen(),

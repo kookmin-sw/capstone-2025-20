@@ -20,6 +20,7 @@ class _NameSearchScreenState extends State<NameSearchScreen> {
     final query = _controller.text.trim();
     if (query.isEmpty) return;
 
+    FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
     final results = await PillInfoApiService.fetchPillsByName(query);
