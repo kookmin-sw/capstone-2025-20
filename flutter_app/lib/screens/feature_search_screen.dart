@@ -58,7 +58,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
     } else if (step == 4) {
       // 검색 실행
       try {
-        final results = await FeatureSearchService.searchByFeatures(
+        final future = FeatureSearchService.searchByFeatures(
           shape: selectedShapeList,
           color: selectedColors,
           form: selectedFormList,
@@ -71,7 +71,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => SearchResultScreen(results: results),
+            builder: (context) => SearchResultScreen(searchFuture: future),
           ),
         );
       } catch (e) {
@@ -245,7 +245,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('특징으로 검색')),
+      appBar: AppBar(title: const Text('생김새로 검색')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

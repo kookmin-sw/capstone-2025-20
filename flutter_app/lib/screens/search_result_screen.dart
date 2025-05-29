@@ -4,19 +4,15 @@ import '../widgets/search_result_list.dart';
 import '../utils/pill_storage.dart';
 
 class SearchResultScreen extends StatelessWidget {
-  final List<Pill> results;
+  final Future<List<Pill>> searchFuture;
 
-  const SearchResultScreen({Key? key, required this.results}) : super(key: key);
+  const SearchResultScreen({Key? key, required this.searchFuture}) : super(key: key);
 
   void _addPill(BuildContext context, int code) async {
     await PillStorage.addPill(code);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('복용약에 추가되었습니다')),
     );
-  }
-
-  void _goHome(BuildContext context) {
-    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -29,20 +25,30 @@ class SearchResultScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: results.isEmpty
-            ? const Center(child: Text('검색 결과가 없습니다.'))
-            : Column(
-          children: [
-            Expanded(
-              child: SearchResultList(
-                pills: results,
-                onAdd: (itemSeq) => _addPill(context, itemSeq),
-              ),
+      body: FutureBuilder<List<Pill>>(
+        future: searchFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final results = snapshot.data ?? [];
+          if (results.isEmpty) {
+            return const Center(child: Text('검색 결과가 없습니다.'));
+          }
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SearchResultList(
+                    pills: results,
+                    onAdd: (itemSeq) => _addPill(context, itemSeq),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
