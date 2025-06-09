@@ -1,6 +1,7 @@
 import requests
 import json
 import asyncio
+from abc import ABC, abstractmethod
 from aiohttp import ClientSession
 from django.http import JsonResponse
 from django.core.cache import cache
@@ -125,9 +126,9 @@ class BaseSaveDataView(APIView):
         async with ClientSession() as session:
             tasks = []
             for page_no in range(1, total_pages + 1):
-                async def limited_fetch(page_no):
+                async def limited_fetch(_page_no):
                     async with semaphore:
-                        return await self.async_fetch_page_data(session, page_no, num_of_rows)
+                        return await self.async_fetch_page_data(session, _page_no, num_of_rows)
 
                 tasks.append(limited_fetch(page_no))
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -365,41 +366,60 @@ class CheckInteractionsView(View):
             if not item_seq_list or not isinstance(item_seq_list, list):
                 return JsonResponse({"error": "Invalid itemSeqList format"}, status=400)
 
-            # 병용 금기 검사
-            contraindications_view = CheckDrugContraindicationsView()
-            is_safe = True
-            conflicts = []
-
-            # 모든 약물 조합 비교
-            for i in range(len(item_seq_list)-1):
-                for j in range(i + 1, len(item_seq_list)):
-                    drug_a = item_seq_list[i]
-                    drug_b = item_seq_list[j]
-
-                    # CheckDrugContraindicationsWithPaginationView의 금기 확인 메서드 호출
-                    result = contraindications_view.check_contraindicated_with_pagination(drug_a, drug_b)
-                    # 금기일 경우 conflicts 리스트에 추가
-                    if result:
-                        conflicts.append({
-                            "drugA": drug_a,
-                            "drugB": drug_b,
-                            "reason": result.get("PROHBT_CONTENT", "Unknown reason")
-                        })
-
-            # 병용 가능 여부 판단
-            is_safe = len(conflicts) == 0
-
-            # 최종 응답
-            response = {"isSafe": is_safe}
-            if conflicts:
-                response["conflicts"] = conflicts
+            verification_method = InteractionContraindicationCheck()
+            response = verification_method.verification(item_seq_list)
 
             return JsonResponse(response, status=200, json_dumps_params={'ensure_ascii': False})
-
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON format"}, status=400)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+
+class ContraindicationCheck(ABC):
+     """
+     금기 조건 검증을 위한 추상 클래스
+     """
+     @abstractmethod
+     def verification(self, item_seq_list):
+         """
+         금기 조건 검증 로직
+         :param item_seq_list: 검증할 itemSeq 리스트
+         :return: 금기 항목 결과 리스트
+         """
+         pass
+
+class InteractionContraindicationCheck(ContraindicationCheck):
+    def verification(self, item_seq_list):
+        # 병용 금기 검사
+        contraindications_view = CheckDrugContraindicationsView()
+        is_safe = True
+        conflicts = []
+
+        # 모든 약물 조합 비교
+        for i in range(len(item_seq_list) - 1):
+            for j in range(i + 1, len(item_seq_list)):
+                drug_a = item_seq_list[i]
+                drug_b = item_seq_list[j]
+
+                # CheckDrugContraindicationsWithPaginationView의 금기 확인 메서드 호출
+                result = contraindications_view.check_contraindicated_with_pagination(drug_a, drug_b)
+                # 금기일 경우 conflicts 리스트에 추가
+                if result:
+                    conflicts.append({
+                        "drugA": drug_a,
+                        "drugB": drug_b,
+                        "reason": result.get("PROHBT_CONTENT", "Unknown reason")
+                    })
+
+        # 병용 가능 여부 판단
+        is_safe = len(conflicts) == 0
+
+        # 최종 응답
+        response = {"isSafe": is_safe}
+        if conflicts:
+            response["conflicts"] = conflicts
+
+        return response
 
 class CheckDrugContraindicationsView(APIView):
     """
