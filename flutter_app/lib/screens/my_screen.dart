@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../model/pill.dart';
-import '../model/my_pills.dart';
 import '../model/interaction_result.dart';
 import '../services/pill_info_api_service.dart';
 import '../utils/pill_storage.dart';
@@ -50,7 +49,32 @@ class _MyScreenState extends State<MyScreen> {
     final codes = await PillStorage.load();
     codes.removeWhere((code) => code.toString() == itemSeq);
     await PillStorage.save(codes);
-    await loadMyPills();
+
+    setState(() {
+      pills.removeWhere((pill) => pill.itemSeq == itemSeq);
+    });
+
+    final stillValid = pills.length > 1;
+
+    if (!stillValid) {
+      setState(() => interactionResult = null);
+      return;
+    }
+
+    if (interactionResult?.isSafe == false) {
+      final conflicts = interactionResult!.conflicts;
+
+      final isConflictDrugDeleted = conflicts.any((conflict) =>
+      conflict.drugA == itemSeq || conflict.drugB == itemSeq
+      );
+
+      if (isConflictDrugDeleted) {
+        final newInteraction = await PillInfoApiService.checkInteractions(
+          pills.map((e) => e.itemSeq).toList(),
+        );
+        setState(() => interactionResult = newInteraction);
+      }
+    }
   }
 
   @override

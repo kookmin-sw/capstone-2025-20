@@ -13,22 +13,15 @@ class CameraSearchScreen extends StatelessWidget {
 
     if (pickedFile != null) {
       final imageFile = File(pickedFile.path);
-      try {
-        final results = await CameraSearchService.searchByImage(imageFile);
-        if (context.mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SearchResultScreen(results: results),
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchResultScreen(
+              searchFuture: CameraSearchService.searchByImage(imageFile),
             ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('검색 실패: $e')),
-          );
-        }
+          ),
+        );
       }
     } else {
       if (context.mounted) {
