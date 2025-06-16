@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../model/pill.dart';
 import '../model/interaction_result.dart';
-import '../services/pill_info_api_service.dart';
+import '../services/pill_search_strategy.dart';
+import '../services/interaction_check_strategy.dart';
 import '../utils/pill_storage.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -27,13 +28,13 @@ class _MyScreenState extends State<MyScreen> {
     await Future.delayed(const Duration(seconds: 1));
 
     final codes = await PillStorage.load();
-    final futures = codes.map((code) => PillInfoApiService.fetchPillByCode(code));
-    final results = await Future.wait(futures);
+    final futures = codes.map((code) => CodeSearchStrategy(code).search().then((list) => list.isNotEmpty ? list.first : null));    final results = await Future.wait(futures);
     final validPills = results.whereType<Pill>().toList();
 
     InteractionResult? interaction;
     if (validPills.length > 1) {
-      interaction = await PillInfoApiService.checkInteractions(
+      final strategy = ServerInteractionCheckStrategy();
+      interaction = await strategy.check(
         validPills.map((e) => e.itemSeq).toList(),
       );
     }
@@ -69,7 +70,7 @@ class _MyScreenState extends State<MyScreen> {
       );
 
       if (isConflictDrugDeleted) {
-        final newInteraction = await PillInfoApiService.checkInteractions(
+        final newInteraction = await ServerInteractionCheckStrategy().check(
           pills.map((e) => e.itemSeq).toList(),
         );
         setState(() => interactionResult = newInteraction);

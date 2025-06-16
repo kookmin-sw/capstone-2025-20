@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pill.dart';
-import '../services/pill_info_api_service.dart';
+import '../services//pill_search_strategy.dart';
 import '../utils/pill_storage.dart';
 import '../widgets/search_result_list.dart';
 
@@ -23,7 +23,8 @@ class _NameSearchScreenState extends State<NameSearchScreen> {
     FocusScope.of(context).unfocus();
     setState(() => _isLoading = true);
 
-    final results = await PillInfoApiService.fetchPillsByName(query);
+    final strategy = NameSearchStrategy(query);
+    final results = await strategy.search();
 
     setState(() {
       _searchResults = results;
