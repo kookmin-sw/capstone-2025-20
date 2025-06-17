@@ -7,7 +7,7 @@ abstract class InteractionCheckStrategy {
   Future<InteractionResult?> check(List<String> itemSeqList);
 }
 
-class ServerInteractionCheckStrategy implements InteractionCheckStrategy {
+class DrugInteractionCheckStrategy implements InteractionCheckStrategy {
   @override
   Future<InteractionResult?> check(List<String> itemSeqList) async {
     final url = Uri.parse(ApiConstants.checkInteractionUrl);

@@ -34,7 +34,7 @@ class _MyScreenState extends State<MyScreen> {
 
     InteractionResult? interaction;
     if (validPills.length > 1) {
-      final strategy = ServerInteractionCheckStrategy();
+      final strategy = DrugInteractionCheckStrategy();
       interaction = await strategy.check(
         validPills.map((e) => e.itemSeq).toList(),
       );
@@ -71,7 +71,7 @@ class _MyScreenState extends State<MyScreen> {
       );
 
       if (isConflictDrugDeleted) {
-        final newInteraction = await ServerInteractionCheckStrategy().check(
+        final newInteraction = await DrugInteractionCheckStrategy().check(
           pills.map((e) => e.itemSeq).toList(),
         );
         setState(() => interactionResult = newInteraction);
