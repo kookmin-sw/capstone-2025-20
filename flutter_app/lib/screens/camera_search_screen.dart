@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import '../services/camera_search_service.dart';
+import '../services/pill_search_strategy.dart';
 import 'search_result_screen.dart';
 
 class CameraSearchScreen extends StatelessWidget {
@@ -18,7 +18,7 @@ class CameraSearchScreen extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => SearchResultScreen(
-              searchFuture: CameraSearchService.searchByImage(imageFile),
+              searchFuture: CameraSearchStrategy(imageFile).search(),
             ),
           ),
         );

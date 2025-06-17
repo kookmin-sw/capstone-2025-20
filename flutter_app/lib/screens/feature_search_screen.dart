@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/feature_search_service.dart';
+import '../services/pill_search_strategy.dart';
 import 'search_result_screen.dart';
 
 class FeatureSearchScreen extends StatefulWidget {
@@ -56,17 +56,14 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
         step = 4;
       });
     } else if (step == 4) {
-      // 검색 실행
       try {
-        final future = FeatureSearchService.searchByFeatures(
+        final future = FeatureSearchStrategy(
           shape: selectedShapeList,
           color: selectedColors,
           form: selectedFormList,
           line: selectedFormList.contains('정제') ? selectedLineList : [],
-          text: [frontIdentifier, backIdentifier]
-              .where((e) => e.trim().isNotEmpty)
-              .toList(),
-        );
+          text: [frontIdentifier, backIdentifier].where((e) => e.trim().isNotEmpty).toList(),
+        ).search();
 
         Navigator.push(
           context,
@@ -80,7 +77,7 @@ class _FeatureSearchScreenState extends State<FeatureSearchScreen> {
           const SnackBar(content: Text('검색 중 오류가 발생했습니다.')),
         );
       }
-
+      return;
     } else {
       // 다음 단계로
       setState(() {
