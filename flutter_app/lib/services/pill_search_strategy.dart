@@ -4,12 +4,10 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../settings.dart';
 
-
 // 전략 패턴
 abstract class PillSearchStrategy {
   Future<List<Pill>> search();
 }
-
 
 class FeatureSearchStrategy implements PillSearchStrategy {
   final List<String> shape;
@@ -53,7 +51,8 @@ class FeatureSearchStrategy implements PillSearchStrategy {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(decoded);
-        print('응답 JSON (포맷팅): ${const JsonEncoder.withIndent('  ').convert(json)}');
+        print(
+            '응답 JSON (포맷팅): ${const JsonEncoder.withIndent('  ').convert(json)}');
 
         final items = json['data'] as List<dynamic>?;
         if (items == null || items.isEmpty) return [];
@@ -68,7 +67,6 @@ class FeatureSearchStrategy implements PillSearchStrategy {
     }
   }
 }
-
 
 class CameraSearchStrategy implements PillSearchStrategy {
   final File imageFile;
@@ -96,7 +94,6 @@ class CameraSearchStrategy implements PillSearchStrategy {
   }
 }
 
-
 class NameSearchStrategy implements PillSearchStrategy {
   final String name;
 
@@ -105,7 +102,8 @@ class NameSearchStrategy implements PillSearchStrategy {
   @override
   Future<List<Pill>> search() async {
     final encodedName = Uri.encodeComponent(name);
-    final url = Uri.parse('${ApiConstants.drugNameSearchUrl}?search=$encodedName');
+    final url =
+    Uri.parse('${ApiConstants.drugNameSearchUrl}?search=$encodedName');
 
     try {
       final response = await http.get(url);
@@ -129,7 +127,6 @@ class NameSearchStrategy implements PillSearchStrategy {
     }
   }
 }
-
 
 class CodeSearchStrategy implements PillSearchStrategy {
   final int itemSeq;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../model/pill.dart';
-import '../services//pill_search_strategy.dart';
+import '../services/pill_search_strategy.dart';
 import '../utils/pill_storage.dart';
 import '../widgets/search_result_list.dart';
 
