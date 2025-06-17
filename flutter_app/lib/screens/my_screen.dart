@@ -28,7 +28,8 @@ class _MyScreenState extends State<MyScreen> {
     await Future.delayed(const Duration(seconds: 1));
 
     final codes = await PillStorage.load();
-    final futures = codes.map((code) => CodeSearchStrategy(code).search().then((list) => list.isNotEmpty ? list.first : null));    final results = await Future.wait(futures);
+    final futures = codes.map((code) => CodeSearchStrategy(code).search().then((list) => list.isNotEmpty ? list.first : null));
+    final results = await Future.wait(futures);
     final validPills = results.whereType<Pill>().toList();
 
     InteractionResult? interaction;
